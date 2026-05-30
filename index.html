@@ -378,12 +378,17 @@
   .toggle-sidebar:hover { background: var(--ink); color: var(--paper); }
 
   .tts-launch-main {
-    background: var(--accent); border: none; color: white;
-    font-size: 1rem; width: 32px; height: 32px;
-    display: flex; align-items: center; justify-content: center;
+    background: var(--accent);
+    border: none; color: white;
+    font-size: 0.95rem;
+    height: 32px;
+    padding: 0 12px;
+    display: flex; align-items: center; gap: 5px;
     cursor: pointer; transition: all 0.15s; flex-shrink: 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase;
   }
-  .tts-launch-main:hover { background: #a93226; transform: scale(1.07); }
+  .tts-launch-main:hover { background: #a93226; }
 
   .file-title-display {
     font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem;
@@ -805,7 +810,6 @@
   </div>
   <div class="header-actions">
     <button class="btn" id="pasteBtn">⌘ Pegar</button>
-    <button class="btn-icon" id="ttsHeaderBtn" title="Escuchar texto">🔊</button>
     <button class="btn btn-primary" id="openBtn">Abrir archivo</button>
     <input type="file" id="fileInput" accept=".md,.markdown,.txt" multiple>
   </div>
@@ -890,7 +894,7 @@
     <button class="tts-btn" id="ttsStop"  title="Detener">⏹</button>
     <button class="tts-btn" id="ttsPrev"  title="Anterior">⏮</button>
     <button class="tts-btn" id="ttsNext"  title="Siguiente">⏭</button>
-    <button class="tts-pick-btn" id="ttsPickBtn" title="Clic en el texto para empezar desde ahí">🎯</button>
+    <button class="tts-pick-btn" id="ttsPickBtn" title="Elegir dónde empezar — haz clic en cualquier párrafo del texto">🎯</button>
   </div>
   <div class="tts-progress-wrap">
     <div class="tts-sentence-preview" id="ttsSentencePreview">—</div>
@@ -977,13 +981,32 @@ function applyReadingFont(){
 }
 
 // ── MARKDOWN ─────────────────────────────────────────────────
+function slugify(text){
+  return text
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // quita acentos
+    .replace(/[^\w\s-]/g,'')
+    .trim()
+    .replace(/[\s]+/g,'-')
+    .replace(/-+/g,'-');
+}
+
 function parseMarkdown(md){
+  // Helper: genera heading con id para navegación interna
+  const heading = (level, text) => {
+    const id = slugify(text.replace(/<[^>]+>/g,''));
+    return `<h${level} id="${id}">${text}</h${level}>`;
+  };
+
   return md
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/```[\w]*\n?([\s\S]*?)```/g,(_,c)=>`<pre><code>${c.trim()}</code></pre>`)
-    .replace(/^#{6} (.+)$/gm,'<h6>$1</h6>').replace(/^#{5} (.+)$/gm,'<h5>$1</h5>')
-    .replace(/^#{4} (.+)$/gm,'<h4>$1</h4>').replace(/^#{3} (.+)$/gm,'<h3>$1</h3>')
-    .replace(/^#{2} (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/^#{6} (.+)$/gm,(_,t)=>heading(6,t))
+    .replace(/^#{5} (.+)$/gm,(_,t)=>heading(5,t))
+    .replace(/^#{4} (.+)$/gm,(_,t)=>heading(4,t))
+    .replace(/^#{3} (.+)$/gm,(_,t)=>heading(3,t))
+    .replace(/^#{2} (.+)$/gm,(_,t)=>heading(2,t))
+    .replace(/^# (.+)$/gm,  (_,t)=>heading(1,t))
     .replace(/^(---|___|\*\*\*)$/gm,'<hr>')
     .replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>')
     .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
@@ -992,7 +1015,14 @@ function parseMarkdown(md){
     .replace(/__(.+?)__/g,'<strong>$1</strong>').replace(/_(.+?)_/g,'<em>$1</em>')
     .replace(/~~(.+?)~~/g,'<del>$1</del>').replace(/`([^`]+)`/g,'<code>$1</code>')
     .replace(/!\[([^\]]*)\]\(([^)]+)\)/g,(_,a,u)=>`<img alt="${esc(a)}" src="${safeUrl(u)}" loading="lazy">`)
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,(_,l,u)=>`<a href="${safeUrl(u)}" target="_blank" rel="noopener">${l}</a>`)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,(_,l,u)=>{
+      // Enlace interno (#anchor): navega dentro del documento
+      const raw = String(u||'').trim();
+      if(raw.startsWith('#')){
+        return `<a href="${esc(raw)}" class="md-anchor-link">${l}</a>`;
+      }
+      return `<a href="${safeUrl(raw)}" target="_blank" rel="noopener">${l}</a>`;
+    })
     .replace(/((?:^\|.+\|\n)+)/gm,block=>{
       const rows=block.trim().split('\n'); let out='<table>';
       rows.forEach((r,i)=>{ if(/^\|[-:| ]+\|$/.test(r)) return;
@@ -1188,7 +1218,7 @@ function render(){
     <div class="toolbar-left">
       <button class="toggle-sidebar" id="toggleSidebarBtn">☰</button>
       <span class="file-title-display">${esc(file.name)}</span>
-      <button class="tts-launch-main" id="ttsLaunchBtn" title="Escuchar">🔊</button>
+      <button class="tts-launch-main" id="ttsLaunchBtn" title="Escuchar texto desde el principio">🔊 Escuchar</button>
     </div>
     <div class="toolbar-right">
       <div class="font-size-control">
@@ -1282,7 +1312,32 @@ function render(){
   applyFontSize();
   applyColWidth();
   applyReadingFont();
-  if(viewMode==='rendered') applyHighlightsToDOM();
+  if(viewMode==='rendered'){
+    applyHighlightsToDOM();
+    // Handle internal anchor links (table of contents navigation)
+    document.querySelectorAll('.md-anchor-link').forEach(a=>{
+      a.addEventListener('click', e=>{
+        e.preventDefault();
+        const hash = a.getAttribute('href'); // e.g. "#capitulo-2"
+        const id   = hash.slice(1);
+        // Try exact id first, then slugified variants
+        let target = document.getElementById(id);
+        if(!target){
+          // Try finding heading whose text slugifies to this id
+          document.querySelectorAll('.md-rendered h1,.md-rendered h2,.md-rendered h3,.md-rendered h4,.md-rendered h5,.md-rendered h6').forEach(h=>{
+            if(slugify(h.textContent)===id) target=h;
+          });
+        }
+        if(target){
+          target.scrollIntoView({behavior:'smooth', block:'start'});
+          // Brief highlight to confirm arrival
+          target.style.transition='background 0.3s';
+          target.style.background='rgba(192,57,43,0.1)';
+          setTimeout(()=>target.style.background='',1200);
+        }
+      });
+    });
+  }
   bmRenderList();
   if(viewMode==='rendered') setTimeout(bmRenderAnchors, 50);
   document.getElementById('bmAddBtn')?.addEventListener('click', bmAdd);
@@ -1359,10 +1414,9 @@ document.querySelectorAll('.pomo-mode-btn').forEach(b=>b.addEventListener('click
 pomoUpdateUI();
 
 // ── TTS ──────────────────────────────────────────────────────
-let ttsSentences=[], ttsIndex=0, ttsPlaying=false;
+let ttsSentences=[], ttsIndex=0, ttsPlaying=false, ttsAborted=false;
 const TTS_SPEEDS=[0.75,1,1.25,1.5,1.75,2,2.5,3]; let ttsSpeedIdx=1;
 
-/* Strip markdown to plain text */
 function ttsExtract(raw){
   return raw
     .replace(/```[\s\S]*?```/g,'').replace(/`[^`]+`/g,'')
@@ -1373,195 +1427,163 @@ function ttsExtract(raw){
     .replace(/^---+$/gm,'').replace(/\n{2,}/g,'\n').trim();
 }
 
-/* Split plain text into sentences */
 function ttsSplit(t){
   return t.split(/(?<=[.!?…])\s+/).map(s=>s.trim()).filter(s=>s.length>3);
 }
 
-/* Inject <span id="tts-s-N"> around each sentence in .md-rendered */
+/* Mark each readable element with the index of its closest sentence */
 function ttsInjectSpans(sentences){
-  const container = document.querySelector('.md-rendered');
+  const container=document.querySelector('.md-rendered');
   if(!container) return;
+  // Remove old marks
+  container.querySelectorAll('[data-tts-idx]').forEach(e=>e.removeAttribute('data-tts-idx'));
 
-  // Walk all text nodes, rebuild with spans around matching sentences
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
-  const textNodes = [];
-  let node;
-  while((node=walker.nextNode())){
-    // Skip nodes inside <code> or <pre>
-    if(node.parentElement.closest('pre,code')) continue;
-    textNodes.push(node);
-  }
-
-  // Build a map: full concatenated text → position
-  let fullText = textNodes.map(n=>n.textContent).join('\uFFFE'); // use separator
-  let offset = 0;
-  const nodeOffsets = textNodes.map(n=>{
-    const start=offset; offset+=n.textContent.length+1; return {node,start,len:n.textContent.length};
-  });
-
-  // For each sentence, find its position in the full text and mark the node
-  sentences.forEach((sentence, idx) => {
-    const needle = sentence.slice(0,30); // first 30 chars for matching
-    const pos = fullText.indexOf(needle);
-    if(pos === -1) return;
-
-    // Find which node contains this position
-    let cumLen = 0;
-    for(const no of nodeOffsets){
-      if(pos >= no.start && pos < no.start + no.len){
-        // Wrap the parent element (p, li, h1...) with a data attribute
-        const parent = no.node.parentElement;
-        if(parent && !parent.dataset.ttsIdx){
-          parent.dataset.ttsIdx = idx;
-        }
-        break;
+  const elems=Array.from(container.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6,blockquote'));
+  elems.forEach(el=>{
+    const txt=el.textContent.trim().slice(0,30);
+    if(!txt) return;
+    let best=-1, bestScore=0;
+    sentences.forEach((s,i)=>{
+      const needle=s.slice(0,25);
+      if(txt.includes(needle.slice(0,15)) && needle.length>bestScore){
+        best=i; bestScore=needle.length;
       }
-    }
+    });
+    if(best>=0) el.dataset.ttsIdx=best;
   });
 }
 
-/* Highlight the current sentence span and scroll to it */
-function ttsHighlight(idx){
+function ttsClearHighlight(){
   document.querySelectorAll('.tts-reading').forEach(e=>{
     e.classList.remove('tts-reading');
-    e.style.background='';
-    e.style.borderRadius='';
-    e.style.transition='';
+    e.style.background=''; e.style.boxShadow=''; e.style.borderRadius='';
   });
+}
 
-  // Try data-tts-idx first (injected approach)
-  let target = document.querySelector(`[data-tts-idx="${idx}"]`);
-
-  // Fallback: search text nodes for the sentence text
-  if(!target){
-    const sentence = ttsSentences[idx];
-    if(!sentence) return;
-    const needle = sentence.slice(0,25).trim();
-    const container = document.querySelector('.md-rendered');
-    if(!container) return;
-    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
-    let node;
-    while((node=walker.nextNode())){
-      if(node.parentElement.closest('pre,code')) continue;
-      if(node.textContent.includes(needle)){
-        target = node.parentElement;
-        break;
+function ttsHighlight(idx){
+  ttsClearHighlight();
+  let target=document.querySelector(`[data-tts-idx="${idx}"]`);
+  if(!target && ttsSentences[idx]){
+    const needle=ttsSentences[idx].slice(0,20);
+    const container=document.querySelector('.md-rendered');
+    if(container){
+      const walker=document.createTreeWalker(container,NodeFilter.SHOW_TEXT);
+      let node;
+      while((node=walker.nextNode())){
+        if(node.parentElement.closest('pre,code')) continue;
+        if(node.textContent.includes(needle)){ target=node.parentElement; break; }
       }
     }
   }
-
   if(target){
     target.classList.add('tts-reading');
-    target.style.background='rgba(255,236,100,0.55)';
-    target.style.borderRadius='3px';
-    target.style.transition='background 0.25s ease';
-    target.scrollIntoView({behavior:'smooth', block:'center'});
+    target.scrollIntoView({behavior:'smooth',block:'center'});
   }
 }
 
 function ttsUpdateUI(){
   const prev=document.getElementById('ttsSentencePreview');
   const fill=document.getElementById('ttsProgressFill');
-  const play=document.getElementById('ttsPlay'), pause=document.getElementById('ttsPause');
+  const play=document.getElementById('ttsPlay');
+  const pause=document.getElementById('ttsPause');
   const spd=document.getElementById('ttsSpeedBtn');
   if(!prev) return;
-  prev.textContent = ttsSentences[ttsIndex]||'—';
-  fill.style.width = (ttsSentences.length>1 ? ttsIndex/(ttsSentences.length-1)*100 : 0)+'%';
-  if(spd) spd.textContent = TTS_SPEEDS[ttsSpeedIdx]+'×';
-  play.style.display  = ttsPlaying?'none':'';
-  pause.style.display = ttsPlaying?'':'none';
+  prev.textContent=ttsSentences[ttsIndex]||'—';
+  fill.style.width=(ttsSentences.length>1?ttsIndex/(ttsSentences.length-1)*100:0)+'%';
+  if(spd) spd.textContent=TTS_SPEEDS[ttsSpeedIdx]+'×';
+  play.style.display=ttsPlaying?'none':'';
+  pause.style.display=ttsPlaying?'':'none';
 }
 
 function ttsSpeak(idx){
+  // Cancel any ongoing speech but do NOT let the onerror/onend callbacks fire
+  ttsAborted=true;
   window.speechSynthesis.cancel();
-  if(idx>=ttsSentences.length){
-    ttsPlaying=false; ttsIndex=0;
-    document.querySelectorAll('.tts-reading').forEach(e=>{e.classList.remove('tts-reading');e.style.background='';});
-    ttsUpdateUI(); return;
-  }
-  ttsIndex=idx;
-  ttsHighlight(idx);
-  ttsUpdateUI();
-
-  const utt = new SpeechSynthesisUtterance(ttsSentences[idx]);
-  utt.lang='es-ES'; utt.rate=TTS_SPEEDS[ttsSpeedIdx];
-  const voices=window.speechSynthesis.getVoices();
-  const esVoice=voices.find(v=>v.lang==='es-ES')||voices.find(v=>v.lang.startsWith('es'));
-  if(esVoice) utt.voice=esVoice;
-  utt.onend  = ()=>{ if(ttsPlaying) ttsSpeak(idx+1); };
-  utt.onerror = ()=>{ if(ttsPlaying) ttsSpeak(idx+1); };
-  window.speechSynthesis.speak(utt);
+  // Small delay so cancel() completes before we start the new utterance
+  setTimeout(()=>{
+    ttsAborted=false;
+    if(idx>=ttsSentences.length){
+      ttsPlaying=false; ttsIndex=0; ttsClearHighlight(); ttsUpdateUI(); return;
+    }
+    ttsIndex=idx;
+    ttsHighlight(idx);
+    ttsUpdateUI();
+    const utt=new SpeechSynthesisUtterance(ttsSentences[idx]);
+    utt.lang='es-ES'; utt.rate=TTS_SPEEDS[ttsSpeedIdx];
+    const voices=window.speechSynthesis.getVoices();
+    const esVoice=voices.find(v=>v.lang==='es-ES')||voices.find(v=>v.lang.startsWith('es'));
+    if(esVoice) utt.voice=esVoice;
+    utt.onend=()=>{ if(!ttsAborted && ttsPlaying) ttsSpeak(idx+1); };
+    utt.onerror=e=>{ if(!ttsAborted && ttsPlaying && e.error!=='canceled') ttsSpeak(idx+1); };
+    window.speechSynthesis.speak(utt);
+  }, 50);
 }
 
-function ttsLaunch(){
+function ttsLaunch(startIdx=0){
   if(!activeId) return;
   const file=files.find(f=>f.id===activeId); if(!file) return;
-  ttsSentences = ttsSplit(ttsExtract(file.raw));
-  ttsIndex=0; ttsPlaying=true;
+  ttsSentences=ttsSplit(ttsExtract(file.raw));
+  ttsIndex=startIdx; ttsPlaying=true;
   document.getElementById('ttsBar').classList.add('visible');
-  // Inject spans after a tick so the DOM is ready
-  setTimeout(()=>{ ttsInjectSpans(ttsSentences); ttsSpeak(0); }, 80);
+  setTimeout(()=>{ ttsInjectSpans(ttsSentences); ttsSpeak(startIdx); }, 80);
 }
 
 function ttsPlay(){
-  if(!ttsSentences.length){ ttsLaunch(); return; }
+  if(!ttsSentences.length){ ttsLaunch(0); return; }
   ttsPlaying=true; ttsSpeak(ttsIndex);
 }
 function ttsPauseF(){
-  ttsPlaying=false; window.speechSynthesis.cancel();
+  ttsAborted=true; ttsPlaying=false;
+  window.speechSynthesis.cancel();
   ttsUpdateUI();
 }
 function ttsStopF(){
-  ttsPlaying=false; ttsIndex=0; window.speechSynthesis.cancel();
-  document.querySelectorAll('.tts-reading').forEach(e=>{e.classList.remove('tts-reading');e.style.background='';});
+  ttsAborted=true; ttsPlaying=false; ttsIndex=0;
+  window.speechSynthesis.cancel();
+  ttsClearHighlight();
   document.querySelectorAll('[data-tts-idx]').forEach(e=>e.removeAttribute('data-tts-idx'));
   document.getElementById('ttsBar').classList.remove('visible');
   ttsExitPickMode();
   ttsUpdateUI();
 }
 
-// ── TTS PICK MODE (click-to-start) ───────────────────────────
-let ttsPickActive = false;
+// ── TTS PICK MODE ─────────────────────────────────────────────
+let ttsPickActive=false;
 
 function ttsEnterPickMode(){
+  ttsPickActive=true;
+  document.getElementById('ttsPickBtn').classList.add('active');
+
+  // Prepare sentences if not done yet
   if(!ttsSentences.length){
-    // Prepare sentences and inject spans first, then enter pick mode
     if(!activeId) return;
     const file=files.find(f=>f.id===activeId); if(!file) return;
     ttsSentences=ttsSplit(ttsExtract(file.raw));
     document.getElementById('ttsBar').classList.add('visible');
-    setTimeout(()=>{ ttsInjectSpans(ttsSentences); _activatePickMode(); }, 80);
-  } else {
-    if(!document.querySelector('[data-tts-idx]')) ttsInjectSpans(ttsSentences);
-    _activatePickMode();
   }
-}
+  setTimeout(()=>{
+    ttsInjectSpans(ttsSentences);
 
-function _activatePickMode(){
-  ttsPickActive=true;
-  document.getElementById('ttsPickBtn').classList.add('active');
+    // Banner inside toolbar area (above main scroll)
+    let banner=document.getElementById('ttsSelectBanner');
+    if(!banner){
+      banner=document.createElement('div');
+      banner.id='ttsSelectBanner';
+      banner.className='tts-select-banner';
+      banner.innerHTML=`<span>🎯 Haz clic donde quieres empezar</span><button id="ttsCancelPickBtn">Cancelar</button>`;
+      // Insert inside .main before first child (sticky inside scroll)
+      const main=document.getElementById('main');
+      main.insertBefore(banner, main.firstChild);
+      document.getElementById('ttsCancelPickBtn').addEventListener('click',ttsExitPickMode);
+    }
 
-  // Add banner above content
-  const main=document.getElementById('main');
-  let banner=document.getElementById('ttsSelectBanner');
-  if(!banner){
-    banner=document.createElement('div');
-    banner.id='ttsSelectBanner';
-    banner.className='tts-select-banner';
-    banner.innerHTML=`<span>🎯 Haz clic en cualquier párrafo para empezar a leer desde ahí</span>
-      <button id="ttsCancelPickBtn">Cancelar</button>`;
-    main.prepend(banner);
-    document.getElementById('ttsCancelPickBtn').addEventListener('click', ttsExitPickMode);
-  }
-
-  // Add selectable class to main for CSS hover styles
-  main.classList.add('tts-selectable');
-
-  // Attach click listeners to all readable elements
-  document.querySelectorAll('.md-rendered p, .md-rendered li, .md-rendered h1, .md-rendered h2, .md-rendered h3, .md-rendered h4').forEach(el=>{
-    el.addEventListener('click', ttsHandlePickClick, {once:true});
-  });
+    document.getElementById('main').classList.add('tts-selectable');
+    const pickEls = document.querySelectorAll('.md-rendered p,.md-rendered li,.md-rendered h1,.md-rendered h2,.md-rendered h3,.md-rendered h4');
+    pickEls.forEach(el=>{
+      el.removeEventListener('click', ttsHandlePickClick); // evitar duplicados
+      el.addEventListener('click', ttsHandlePickClick);
+    });
+  }, ttsSentences.length?0:80);
 }
 
 function ttsExitPickMode(){
@@ -1571,29 +1593,47 @@ function ttsExitPickMode(){
   document.getElementById('main').classList.remove('tts-selectable');
   const banner=document.getElementById('ttsSelectBanner');
   if(banner) banner.remove();
-  // Remove leftover listeners by replacing elements (simplest approach)
-  document.querySelectorAll('.md-rendered p, .md-rendered li, .md-rendered h1, .md-rendered h2, .md-rendered h3, .md-rendered h4').forEach(el=>{
-    el.removeEventListener('click', ttsHandlePickClick);
+  document.querySelectorAll('.md-rendered p,.md-rendered li,.md-rendered h1,.md-rendered h2,.md-rendered h3,.md-rendered h4').forEach(el=>{
+    el.removeEventListener('click',ttsHandlePickClick);
   });
 }
 
 function ttsHandlePickClick(e){
+  e.stopPropagation();
+  const el = e.currentTarget;
   ttsExitPickMode();
-  const el=e.currentTarget;
-  // Find the sentence index for this element
-  let startIdx=0;
-  if(el.dataset.ttsIdx !== undefined){
-    startIdx=parseInt(el.dataset.ttsIdx)||0;
+
+  // Always rebuild sentences from the current file
+  if(!activeId) return;
+  const file = files.find(f=>f.id===activeId); if(!file) return;
+  ttsSentences = ttsSplit(ttsExtract(file.raw));
+
+  // Find start index: prefer data-tts-idx, fallback to text match
+  let startIdx = 0;
+  if(el.dataset.ttsIdx !== undefined && el.dataset.ttsIdx !== ''){
+    startIdx = Math.max(0, parseInt(el.dataset.ttsIdx)||0);
   } else {
-    // Fallback: find by text match
-    const text=el.textContent.trim().slice(0,20);
-    const found=ttsSentences.findIndex(s=>s.includes(text));
-    if(found>-1) startIdx=found;
+    const needle = el.textContent.trim().slice(0,30);
+    const found  = ttsSentences.findIndex(s => s.slice(0,30).includes(needle.slice(0,15)));
+    if(found > -1) startIdx = found;
   }
-  ttsPlaying=true;
-  ttsSpeak(startIdx);
+
+  // Clamp to valid range
+  startIdx = Math.min(startIdx, ttsSentences.length - 1);
+
+  ttsPlaying  = true;
+  ttsAborted  = false;
+  ttsIndex    = startIdx;
+  document.getElementById('ttsBar').classList.add('visible');
+
+  // Re-inject spans so highlight works, then speak
+  setTimeout(()=>{
+    ttsInjectSpans(ttsSentences);
+    ttsSpeak(startIdx);
+  }, 80);
 }
 
+// Bind TTS controls
 document.getElementById('ttsPlay').addEventListener('click',ttsPlay);
 document.getElementById('ttsPause').addEventListener('click',ttsPauseF);
 document.getElementById('ttsStop').addEventListener('click',ttsStopF);
@@ -1616,7 +1656,8 @@ document.getElementById('ttsSpeedBtn').addEventListener('click',()=>{
 document.getElementById('ttsClose').addEventListener('click',ttsStopF);
 document.getElementById('ttsTrack').addEventListener('click',e=>{
   if(!ttsSentences.length) return;
-  const pct=(e.clientX-e.currentTarget.getBoundingClientRect().left)/e.currentTarget.getBoundingClientRect().width;
+  const rect=e.currentTarget.getBoundingClientRect();
+  const pct=(e.clientX-rect.left)/rect.width;
   const i=Math.round(pct*(ttsSentences.length-1));
   if(ttsPlaying) ttsSpeak(i); else{ttsIndex=i;ttsHighlight(i);ttsUpdateUI();}
 });
@@ -1754,9 +1795,6 @@ document.querySelectorAll('.bnav-btn').forEach(btn=>btn.addEventListener('click'
   document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
   openMobileSidebar(panel==='notes'?'notesPanel':'fileList');
 }));
-
-// ── HEADER TTS BUTTON ────────────────────────────────────────
-document.getElementById('ttsHeaderBtn').addEventListener('click',()=>{if(!activeId){alert('Primero abre un archivo Markdown.');return;}ttsLaunch();});
 
 // ── INIT ─────────────────────────────────────────────────────
 loadState();
