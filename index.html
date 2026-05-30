@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lector Markdown</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Lexend:wght@300;400;500&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/opendyslexic" rel="stylesheet">
 <style>
   :root {
     --ink: #1a1a1a;
@@ -268,6 +269,80 @@
     color: rgba(200,191,173,0.35); letter-spacing: 0.04em;
   }
 
+  /* ── BOOKMARKS PANEL ─────────────────────────────────── */
+  .bookmarks-panel {
+    flex-shrink: 0;
+    border-top: 1px solid rgba(200,191,173,0.2);
+    padding: 0.8rem 1.2rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
+    max-height: 220px;
+  }
+  .bookmarks-header {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .bookmarks-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--rule);
+  }
+  .bm-add-btn {
+    background: none; border: 1px solid rgba(200,191,173,0.25);
+    color: rgba(245,240,232,0.55); font-size: 0.75rem;
+    padding: 2px 7px; cursor: pointer; transition: all 0.15s;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+  .bm-add-btn:hover { background: var(--accent); border-color: var(--accent); color: white; }
+  .bm-list {
+    display: flex; flex-direction: column; gap: 3px;
+    overflow-y: auto; max-height: 155px;
+  }
+  .bm-list::-webkit-scrollbar { width: 3px; }
+  .bm-list::-webkit-scrollbar-thumb { background: rgba(200,191,173,0.25); }
+  .bm-item {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 6px;
+    background: rgba(245,240,232,0.05);
+    border-left: 2px solid var(--accent);
+    cursor: pointer; transition: background 0.15s;
+  }
+  .bm-item:hover { background: rgba(245,240,232,0.1); }
+  .bm-icon { font-size: 0.75rem; flex-shrink: 0; color: var(--accent); }
+  .bm-text {
+    flex: 1; min-width: 0;
+    font-family: 'Crimson Pro', serif; font-size: 0.78rem;
+    color: rgba(245,240,232,0.7); line-height: 1.35;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .bm-pct {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem;
+    color: rgba(200,191,173,0.4); letter-spacing: 0.04em; flex-shrink: 0;
+  }
+  .bm-remove {
+    opacity: 0; background: none; border: none; color: var(--rule);
+    cursor: pointer; font-size: 0.75rem; padding: 2px 3px; transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .bm-item:hover .bm-remove { opacity: 1; }
+  .bm-remove:hover { color: var(--accent); }
+  .bm-empty {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem;
+    color: rgba(200,191,173,0.3); font-style: italic; text-align: center;
+    padding: 0.5rem 0;
+  }
+
+  /* bookmark marker in rendered text */
+  .bm-anchor {
+    display: inline-block; width: 0; height: 0; overflow: visible;
+    position: relative;
+  }
+  .bm-anchor::before {
+    content: '🔖';
+    position: absolute; left: -4px; top: -2px;
+    font-size: 0.9rem; pointer-events: none;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
+  }
+
   /* ── MAIN ────────────────────────────────────────────── */
   /* Solo .main hace scroll vertical — nada más */
   .main {
@@ -385,7 +460,15 @@
   .empty-state h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--ink); font-weight: 400; }
   .empty-state p  { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: rgba(26,26,26,0.38); max-width: 320px; line-height: 1.7; }
 
-  .content-area { max-width: 660px; margin: 0 auto; padding: 3.5rem 2.5rem 6rem; }
+  /* ── COLUMN WIDTH (controlled via --col-width, default 66ch ≈ 66 chars/line) */
+  :root { --col-width: 66ch; }
+
+  .content-area {
+    max-width: var(--col-width);
+    width: 100%;
+    margin: 0 auto;
+    padding: 3.5rem 2.5rem 6rem;
+  }
 
   .meta-bar {
     padding: 0.7rem 2.5rem; border-bottom: 1px solid var(--rule);
@@ -393,7 +476,78 @@
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.62rem; letter-spacing: 0.07em;
     color: rgba(26,26,26,0.4); text-transform: uppercase;
-    max-width: 660px; margin: 0 auto;
+    max-width: var(--col-width); margin: 0 auto;
+  }
+
+  /* Column width control in toolbar */
+  .col-width-control {
+    display: flex; align-items: center; gap: 4px;
+    border: 1px solid var(--rule); padding: 2px 7px;
+  }
+  .col-width-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem;
+    color: rgba(26,26,26,0.35); white-space: nowrap;
+  }
+  .col-width-value {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem;
+    font-weight: 500; color: var(--ink); min-width: 30px; text-align: right;
+  }
+  input[type="range"].col-slider {
+    -webkit-appearance: none; appearance: none;
+    width: 64px; height: 3px; background: var(--rule); outline: none; cursor: pointer;
+  }
+  input[type="range"].col-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 11px; height: 11px; background: var(--accent); cursor: pointer;
+  }
+  input[type="range"].col-slider::-moz-range-thumb {
+    width: 11px; height: 11px; background: var(--accent); border: none; cursor: pointer;
+  }
+
+  /* ── FONT PICKER ─────────────────────────────────────── */
+  .font-picker {
+    display: flex; align-items: center; gap: 4px;
+    border: 1px solid var(--rule); padding: 2px 6px;
+    position: relative;
+  }
+  .font-picker-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem;
+    color: rgba(26,26,26,0.35); white-space: nowrap; flex-shrink: 0;
+  }
+  .font-picker-btn {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem;
+    color: var(--ink); background: none; border: none;
+    cursor: pointer; padding: 1px 4px; white-space: nowrap;
+    display: flex; align-items: center; gap: 3px;
+  }
+  .font-picker-btn::after { content: '▾'; font-size: 0.55rem; opacity: 0.5; }
+  .font-dropdown {
+    display: none;
+    position: absolute; top: 100%; right: 0;
+    background: var(--paper); border: 1px solid var(--rule);
+    border-top: 2px solid var(--accent);
+    z-index: 50; min-width: 200px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
+  .font-picker.open .font-dropdown { display: block; }
+  .font-option {
+    padding: 8px 14px; cursor: pointer;
+    border-bottom: 1px solid rgba(200,191,173,0.3);
+    transition: background 0.12s;
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .font-option:last-child { border-bottom: none; }
+  .font-option:hover { background: var(--paper-dark); }
+  .font-option.active { border-left: 2px solid var(--accent); padding-left: 12px; }
+  .font-option-name {
+    font-size: 0.82rem; font-weight: 500; color: var(--ink);
+  }
+  .font-option-desc {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem; color: rgba(26,26,26,0.4); letter-spacing: 0.04em;
+  }
+  .font-option-sample {
+    font-size: 0.78rem; color: rgba(26,26,26,0.6);
+    margin-top: 2px;
   }
 
   /* ── MARKDOWN ─────────────────────────────────────────── */
@@ -654,6 +808,16 @@
       <textarea id="notesTextarea" placeholder="Escribe aquí tus notas…"></textarea>
       <div class="notes-hint">Se guardan automáticamente por archivo.</div>
     </div>
+    <!-- BOOKMARKS PANEL -->
+    <div class="bookmarks-panel" id="bookmarksPanel" style="display:none">
+      <div class="bookmarks-header">
+        <span class="bookmarks-title">🔖 Marcadores</span>
+        <button class="bm-add-btn" id="bmAddBtn" title="Añadir marcador aquí">+ Marcar</button>
+      </div>
+      <div class="bm-list" id="bmList">
+        <div class="bm-empty">Sin marcadores</div>
+      </div>
+    </div>
   </aside>
 
   <main class="main" id="main">
@@ -713,22 +877,33 @@
 </div>
 
 <script>
+// ── FONTS ────────────────────────────────────────────────────
+const FONTS = [
+  { id:'crimson',   name:'Crimson Pro',           short:'Crimson',   family:"'Crimson Pro', Georgia, serif",          desc:'Clásica · elegante · serif',                    sample:'La lectura es un viaje.' },
+  { id:'lexend',    name:'Lexend',                short:'Lexend',    family:"'Lexend', sans-serif",                   desc:'Diseñada para reducir esfuerzo lector (Google)', sample:'La lectura es un viaje.' },
+  { id:'atkinson',  name:'Atkinson Hyperlegible', short:'Atkinson',  family:"'Atkinson Hyperlegible', sans-serif",    desc:'Máxima legibilidad · baja visión (Braille Inst.)',sample:'La lectura es un viaje.' },
+  { id:'dyslexic',  name:'OpenDyslexic',          short:'Dyslexic',  family:"'OpenDyslexic', sans-serif",             desc:'Anclaje visual · dislexia (neuroeducación)',     sample:'La lectura es un viaje.' },
+];
+
 // ── STATE ────────────────────────────────────────────────────
 let files = [], activeId = null, viewMode = 'rendered';
-let fontSize = 18, hlColor = 'yellow';
+let fontSize = 18, hlColor = 'yellow', colWidth = 66, readingFont = 'crimson';
 let notes = {}, summaries = {}, highlights = {}, summaryVisible = {};
+let bookmarks = {}; // { fileId: [{id, text, pct, scrollY}] }
 const HL_COLORS = ['yellow','green','blue','pink'];
 
 // ── PERSIST ──────────────────────────────────────────────────
 function saveState() {
-  try { localStorage.setItem('mdRdr3', JSON.stringify({files,activeId,viewMode,fontSize,hlColor,notes,highlights,summaries,summaryVisible})); } catch(_){}
+  try { localStorage.setItem('mdRdr3', JSON.stringify({files,activeId,viewMode,fontSize,colWidth,readingFont,hlColor,notes,highlights,summaries,summaryVisible,bookmarks})); } catch(_){}
 }
 function loadState() {
   try {
     const s = JSON.parse(localStorage.getItem('mdRdr3')||'null'); if(!s) return;
     files=s.files||[]; activeId=s.activeId||(files[0]?.id??null);
-    viewMode=s.viewMode||viewMode; fontSize=s.fontSize||fontSize; hlColor=s.hlColor||hlColor;
+    viewMode=s.viewMode||viewMode; fontSize=s.fontSize||fontSize;
+    colWidth=s.colWidth||colWidth; readingFont=s.readingFont||readingFont; hlColor=s.hlColor||hlColor;
     notes=s.notes||{}; highlights=s.highlights||{}; summaries=s.summaries||{}; summaryVisible=s.summaryVisible||{};
+    bookmarks=s.bookmarks||{};
   } catch(_){}
 }
 
@@ -742,6 +917,11 @@ function safeUrl(u){
   if(/^[#./]/.test(v)) return esc(v); return '#';
 }
 function applyFontSize(){ document.querySelectorAll('.md-rendered,.md-raw').forEach(el=>el.style.fontSize=fontSize+'px'); }
+function applyColWidth(){ document.documentElement.style.setProperty('--col-width', colWidth+'ch'); }
+function applyReadingFont(){
+  const font = FONTS.find(f=>f.id===readingFont) || FONTS[0];
+  document.querySelectorAll('.md-rendered').forEach(el=>el.style.fontFamily=font.family);
+}
 
 // ── MARKDOWN ─────────────────────────────────────────────────
 function parseMarkdown(md){
@@ -816,24 +996,110 @@ function handleTextSelection(){
   sel.removeAllRanges();
 }
 
-// ── AI SUMMARY ───────────────────────────────────────────────
-async function generateSummary(fileId,rawText){
-  const btn=document.getElementById('summaryBtn');
-  if(btn){btn.classList.add('loading');btn.textContent='⏳ Resumiendo...';}
-  insertSummaryPanel(fileId,null,true);
-  try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',
-        content:`Eres un asistente para personas con TDAH. Analiza este texto Markdown y genera un resumen en español con:\n1. "💡 Idea central:" (1-2 líneas)\n2. "🔑 Puntos clave:" (3-6 puntos)\n3. "🧠 Para recordar:" (frase o palabra gancho)\nSé conciso y claro.\n\nTEXTO:\n${rawText.slice(0,6000)}`}]})
-    });
-    const data=await resp.json();
-    const text=data?.content?.find(b=>b.type==='text')?.text||'No se pudo generar el resumen.';
-    summaries[fileId]=text; saveState(); insertSummaryPanel(fileId,text,false);
-  } catch(e){
-    summaries[fileId]='Error al conectar con la IA.'; saveState(); insertSummaryPanel(fileId,summaries[fileId],false);
+// ── AI SUMMARY (Gemini - gratuito) ───────────────────────────
+const GEMINI_PROMPT = text =>
+  `Eres un asistente para personas con TDAH. Analiza este texto y genera un resumen en español con:
+1. "💡 Idea central:" (1-2 líneas)
+2. "🔑 Puntos clave:" (3-6 puntos en lista)
+3. "🧠 Para recordar:" (frase o palabra gancho breve)
+Sé conciso y claro. Solo el resumen, sin introducción.
+
+TEXTO:
+${text.slice(0, 6000)}`;
+
+function geminiGetKey() {
+  return localStorage.getItem('geminiApiKey') || '';
+}
+function geminiSaveKey(key) {
+  localStorage.setItem('geminiApiKey', key.trim());
+}
+
+function showApiKeyModal(onConfirm) {
+  const existing = document.getElementById('apiKeyModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'apiKeyModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:var(--paper);border:2px solid var(--ink);border-top:3px solid var(--accent);padding:2rem;width:90%;max-width:500px;display:flex;flex-direction:column;gap:1.2rem;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.3rem;">Clave API de Gemini</div>
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:rgba(26,26,26,0.55);line-height:1.7;">
+        Gemini es <strong>gratuito</strong> — 1500 resúmenes/día sin coste.<br>
+        1. Ve a <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">aistudio.google.com/app/apikey</a><br>
+        2. Crea una clave API gratuita<br>
+        3. Pégala aquí — se guarda solo en tu navegador
+      </p>
+      <input id="apiKeyInput" type="password"
+        placeholder="AIza..."
+        style="font-family:'IBM Plex Mono',monospace;font-size:0.8rem;padding:0.6rem;border:1px solid var(--rule);background:var(--paper-dark);color:var(--ink);outline:none;width:100%;"
+        value="${geminiGetKey()}">
+      <div style="display:flex;gap:0.7rem;justify-content:flex-end;">
+        <button id="apiKeyCancelBtn" style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;letter-spacing:0.08em;padding:5px 12px;border:1px solid var(--rule);background:transparent;color:var(--ink);cursor:pointer;text-transform:uppercase;">Cancelar</button>
+        <button id="apiKeyConfirmBtn" style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;letter-spacing:0.08em;padding:5px 14px;background:var(--accent);border:1px solid var(--accent);color:white;cursor:pointer;text-transform:uppercase;">Guardar y resumir</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  document.getElementById('apiKeyCancelBtn').onclick = () => modal.remove();
+  document.getElementById('apiKeyConfirmBtn').onclick = () => {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    if (!key) { alert('Introduce una clave API válida.'); return; }
+    geminiSaveKey(key);
+    modal.remove();
+    onConfirm(key);
+  };
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.getElementById('apiKeyInput').focus();
+}
+
+async function generateSummary(fileId, rawText) {
+  const key = geminiGetKey();
+  if (!key) {
+    showApiKeyModal(k => generateSummaryWithKey(fileId, rawText, k));
+    return;
   }
-  if(btn){btn.classList.remove('loading');btn.textContent='✦ Resumir con IA';}
+  generateSummaryWithKey(fileId, rawText, key);
+}
+
+async function generateSummaryWithKey(fileId, rawText, apiKey) {
+  const btn = document.getElementById('summaryBtn');
+  if (btn) { btn.classList.add('loading'); btn.textContent = '⏳ Resumiendo...'; }
+  insertSummaryPanel(fileId, null, true);
+
+  try {
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: GEMINI_PROMPT(rawText) }] }],
+          generationConfig: { maxOutputTokens: 800, temperature: 0.4 }
+        })
+      }
+    );
+    const data = await resp.json();
+
+    if (data.error) {
+      if (data.error.code === 400 || data.error.code === 403) {
+        // Bad key — ask again
+        summaries[fileId] = null;
+        insertSummaryPanel(fileId, '❌ Clave API incorrecta. Pulsa de nuevo "Resumir" para introducirla.', false);
+        geminiSaveKey(''); // clear bad key
+      } else {
+        insertSummaryPanel(fileId, `❌ Error: ${data.error.message}`, false);
+      }
+    } else {
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No se pudo generar el resumen.';
+      summaries[fileId] = text; saveState();
+      insertSummaryPanel(fileId, text, false);
+    }
+  } catch(e) {
+    insertSummaryPanel(fileId, '❌ Error de red. Comprueba tu conexión.', false);
+  }
+
+  if (btn) { btn.classList.remove('loading'); btn.textContent = '✦ Resumir con IA'; }
 }
 function insertSummaryPanel(fileId,text,loading){
   const ca=document.querySelector('.content-area'); if(!ca) return;
@@ -854,10 +1120,12 @@ function render(){
   if(!activeId||!files.length){
     mainEl.innerHTML=''; mainEl.appendChild(emptyState); emptyState.style.display='';
     document.getElementById('notesPanel').style.display='none';
+    document.getElementById('bookmarksPanel').style.display='none';
     updateSidebar(); return;
   }
   const file=files.find(f=>f.id===activeId); if(!file) return;
   document.getElementById('notesPanel').style.display='flex';
+  document.getElementById('bookmarksPanel').style.display='flex';
   const ta=document.getElementById('notesTextarea');
   ta.value=notes[activeId]||'';
   ta.oninput=()=>{notes[activeId]=ta.value; saveState();};
@@ -875,6 +1143,22 @@ function render(){
         <input type="range" class="font-slider" id="fontSlider" min="12" max="28" step="1" value="${fontSize}">
         <span class="font-size-label" style="font-size:.88rem">A</span>
         <span class="font-size-value" id="fontSizeDisplay">${fontSize}px</span>
+      </div>
+      <div class="col-width-control">
+        <span class="col-width-label">↔</span>
+        <input type="range" class="col-slider" id="colSlider" min="44" max="100" step="2" value="${colWidth}">
+        <span class="col-width-value" id="colWidthDisplay">${colWidth}ch</span>
+      </div>
+      <div class="font-picker" id="fontPicker">
+        <span class="font-picker-label">Aa</span>
+        <button class="font-picker-btn" id="fontPickerBtn">${FONTS.find(f=>f.id===readingFont)?.short||'Crimson'}</button>
+        <div class="font-dropdown" id="fontDropdown">
+          ${FONTS.map(f=>`<div class="font-option${readingFont===f.id?' active':''}" data-font="${f.id}" style="font-family:${f.family}">
+            <span class="font-option-name" style="font-family:${f.family}">${f.name}</span>
+            <span class="font-option-desc">${f.desc}</span>
+            <span class="font-option-sample" style="font-family:${f.family}">${f.sample}</span>
+          </div>`).join('')}
+        </div>
       </div>
       <div class="hl-picker">
         <span class="hl-picker-label">🖍</span>
@@ -914,6 +1198,27 @@ function render(){
   document.querySelectorAll('.view-btn').forEach(b=>b.addEventListener('click',()=>{viewMode=b.dataset.view;saveState();render();}));
   const slider=document.getElementById('fontSlider'), disp=document.getElementById('fontSizeDisplay');
   if(slider) slider.addEventListener('input',()=>{fontSize=parseInt(slider.value);disp.textContent=fontSize+'px';applyFontSize();saveState();});
+  const colSlider=document.getElementById('colSlider'), colDisp=document.getElementById('colWidthDisplay');
+  if(colSlider) colSlider.addEventListener('input',()=>{colWidth=parseInt(colSlider.value);colDisp.textContent=colWidth+'ch';applyColWidth();saveState();});
+
+  // Font picker
+  const fontPicker=document.getElementById('fontPicker');
+  const fontPickerBtn=document.getElementById('fontPickerBtn');
+  if(fontPicker && fontPickerBtn){
+    fontPickerBtn.addEventListener('click', e=>{e.stopPropagation(); fontPicker.classList.toggle('open');});
+    document.querySelectorAll('.font-option').forEach(opt=>{
+      opt.addEventListener('click', ()=>{
+        readingFont=opt.dataset.font;
+        fontPickerBtn.textContent=FONTS.find(f=>f.id===readingFont)?.short||'Fuente';
+        fontPickerBtn.insertAdjacentHTML('beforeend','<span style="font-size:.55rem;opacity:.5"> ▾</span>');
+        document.querySelectorAll('.font-option').forEach(o=>o.classList.remove('active'));
+        opt.classList.add('active');
+        fontPicker.classList.remove('open');
+        applyReadingFont(); saveState();
+      });
+    });
+    document.addEventListener('click', ()=>fontPicker.classList.remove('open'), {once:false});
+  }
   document.querySelectorAll('.hl-swatch').forEach(sw=>sw.addEventListener('click',()=>{hlColor=sw.dataset.color;saveState();document.querySelectorAll('.hl-swatch').forEach(s=>s.classList.remove('active'));sw.classList.add('active');}));
   if(viewMode==='rendered') document.querySelector('.md-rendered').addEventListener('mouseup',handleTextSelection);
   const sb2=document.getElementById('summaryBtn');
@@ -922,7 +1227,12 @@ function render(){
   document.getElementById('ttsLaunchBtn')?.addEventListener('click',ttsLaunch);
 
   applyFontSize();
+  applyColWidth();
+  applyReadingFont();
   if(viewMode==='rendered') applyHighlightsToDOM();
+  bmRenderList();
+  if(viewMode==='rendered') setTimeout(bmRenderAnchors, 50);
+  document.getElementById('bmAddBtn')?.addEventListener('click', bmAdd);
   updateSidebar();
 }
 
@@ -1047,6 +1357,121 @@ document.getElementById('ttsClose').addEventListener('click',ttsStopF);
 document.getElementById('ttsTrack').addEventListener('click',e=>{if(!ttsSentences.length)return;const pct=(e.clientX-e.currentTarget.getBoundingClientRect().left)/e.currentTarget.getBoundingClientRect().width;const i=Math.round(pct*(ttsSentences.length-1));if(ttsPlaying)ttsSpeak(i);else{ttsIndex=i;ttsHighlight(i);ttsUpdateUI();}});
 window.speechSynthesis.onvoiceschanged=()=>{};
 
+// ── BOOKMARKS ────────────────────────────────────────────────
+function bmGetSnippet() {
+  // Get selected text or first visible paragraph text as label
+  const sel = window.getSelection();
+  if (sel && sel.toString().trim().length > 2) {
+    return sel.toString().trim().slice(0, 60);
+  }
+  // Fallback: find first paragraph near center of viewport
+  const els = document.querySelectorAll('.md-rendered p, .md-rendered h1, .md-rendered h2, .md-rendered h3, .md-rendered li');
+  const midY = window.innerHeight / 2;
+  let best = null, bestDist = Infinity;
+  els.forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+    const dist = Math.abs(rect.top - midY);
+    if (dist < bestDist) { bestDist = dist; best = el; }
+  });
+  return best ? best.textContent.trim().slice(0, 60) : 'Marcador';
+}
+
+function bmAdd() {
+  if (!activeId) return;
+  const mainEl = document.getElementById('main');
+  const scrollY = mainEl.scrollTop;
+  const totalH  = mainEl.scrollHeight - mainEl.clientHeight;
+  const pct     = totalH > 0 ? Math.round((scrollY / totalH) * 100) : 0;
+  const text    = bmGetSnippet();
+  const id      = Date.now() + Math.random();
+  if (!bookmarks[activeId]) bookmarks[activeId] = [];
+  bookmarks[activeId].push({ id, text, pct, scrollY });
+  saveState();
+  bmRenderList();
+  bmRenderAnchors();
+  // Flash confirmation
+  const btn = document.getElementById('bmAddBtn');
+  if (btn) { btn.textContent = '✓ Guardado'; setTimeout(() => { btn.textContent = '+ Marcar'; }, 1200); }
+}
+
+function bmRemove(id) {
+  if (!activeId) return;
+  bookmarks[activeId] = (bookmarks[activeId] || []).filter(b => b.id !== id);
+  saveState();
+  bmRenderList();
+  bmRenderAnchors();
+}
+
+function bmJumpTo(bm) {
+  const mainEl = document.getElementById('main');
+  mainEl.scrollTo({ top: bm.scrollY, behavior: 'smooth' });
+}
+
+function bmRenderList() {
+  const panel = document.getElementById('bookmarksPanel');
+  const list  = document.getElementById('bmList');
+  if (!panel || !list) return;
+
+  const bms = activeId ? (bookmarks[activeId] || []) : [];
+  panel.style.display = activeId ? 'flex' : 'none';
+
+  if (!bms.length) {
+    list.innerHTML = '<div class="bm-empty">Sin marcadores — pulsa "+ Marcar" para añadir uno</div>';
+    return;
+  }
+
+  list.innerHTML = bms.map(bm => `
+    <div class="bm-item" data-id="${bm.id}">
+      <span class="bm-icon">🔖</span>
+      <span class="bm-text" title="${esc(bm.text)}">${esc(bm.text)}</span>
+      <span class="bm-pct">${bm.pct}%</span>
+      <button class="bm-remove" data-id="${bm.id}" title="Eliminar">✕</button>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.bm-item').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.classList.contains('bm-remove')) return;
+      const bm = (bookmarks[activeId] || []).find(b => String(b.id) === el.dataset.id);
+      if (bm) bmJumpTo(bm);
+    });
+  });
+  list.querySelectorAll('.bm-remove').forEach(btn => {
+    btn.addEventListener('click', () => bmRemove(parseFloat(btn.dataset.id)));
+  });
+}
+
+function bmRenderAnchors() {
+  // Remove existing anchors
+  document.querySelectorAll('.bm-anchor').forEach(el => el.remove());
+  if (!activeId) return;
+  const bms = bookmarks[activeId] || [];
+  if (!bms.length) return;
+
+  const mainEl = document.getElementById('main');
+  const totalH = mainEl.scrollHeight - mainEl.clientHeight;
+
+  bms.forEach(bm => {
+    // Find the element closest to the saved scroll position
+    const targetY = bm.scrollY;
+    const els = document.querySelectorAll('.md-rendered p, .md-rendered h1, .md-rendered h2, .md-rendered h3, .md-rendered li');
+    let best = null, bestDist = Infinity;
+    els.forEach(el => {
+      const elTop = el.offsetTop;
+      const dist = Math.abs(elTop - targetY);
+      if (dist < bestDist) { bestDist = dist; best = el; }
+    });
+    if (best) {
+      const anchor = document.createElement('span');
+      anchor.className = 'bm-anchor';
+      anchor.dataset.bmId = bm.id;
+      anchor.title = bm.text;
+      best.prepend(anchor);
+    }
+  });
+}
+
 // ── MOBILE NAV ───────────────────────────────────────────────
 const isMobile=()=>window.innerWidth<=768;
 let activeBnavPanel='none';
@@ -1070,6 +1495,8 @@ document.getElementById('ttsHeaderBtn').addEventListener('click',()=>{if(!active
 
 // ── INIT ─────────────────────────────────────────────────────
 loadState();
+applyColWidth();
+applyReadingFont();
 render();
 </script>
 </body>
