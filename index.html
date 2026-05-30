@@ -587,7 +587,59 @@
   mark.hl-green  { background: var(--hl-green); }
   mark.hl-blue   { background: var(--hl-blue); }
   mark.hl-pink   { background: var(--hl-pink); }
-  .tts-reading   { background: #fff9c4 !important; border-radius: 2px; transition: background 0.2s; }
+  .tts-reading {
+    background: rgba(255,236,100,0.55) !important;
+    border-radius: 3px;
+    box-shadow: 0 0 0 2px rgba(255,210,0,0.35);
+    transition: background 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  /* TTS click-to-start mode */
+  .tts-selectable .md-rendered p,
+  .tts-selectable .md-rendered li,
+  .tts-selectable .md-rendered h1,
+  .tts-selectable .md-rendered h2,
+  .tts-selectable .md-rendered h3,
+  .tts-selectable .md-rendered h4 {
+    cursor: pointer;
+    transition: background 0.15s;
+    border-radius: 3px;
+    padding-left: 4px;
+    margin-left: -4px;
+  }
+  .tts-selectable .md-rendered p:hover,
+  .tts-selectable .md-rendered li:hover,
+  .tts-selectable .md-rendered h1:hover,
+  .tts-selectable .md-rendered h2:hover,
+  .tts-selectable .md-rendered h3:hover,
+  .tts-selectable .md-rendered h4:hover {
+    background: rgba(192,57,43,0.08) !important;
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .tts-select-banner {
+    position: sticky; top: 0;
+    background: var(--accent); color: white;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.06em;
+    padding: 7px 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 20; animation: slideIn 0.2s ease;
+  }
+  .tts-select-banner button {
+    background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+    color: white; font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem;
+    padding: 3px 10px; cursor: pointer; letter-spacing: 0.06em;
+    transition: background 0.15s;
+  }
+  .tts-select-banner button:hover { background: rgba(255,255,255,0.35); }
+  .tts-pick-btn {
+    background: none; border: 1px solid rgba(200,191,173,0.3);
+    color: var(--paper); width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 0.85rem; transition: all 0.15s; flex-shrink: 0;
+  }
+  .tts-pick-btn:hover { background: var(--accent); border-color: var(--accent); }
+  .tts-pick-btn.active { background: var(--accent); border-color: var(--accent); }
 
   /* raw / split */
   .md-raw {
@@ -838,6 +890,7 @@
     <button class="tts-btn" id="ttsStop"  title="Detener">⏹</button>
     <button class="tts-btn" id="ttsPrev"  title="Anterior">⏮</button>
     <button class="tts-btn" id="ttsNext"  title="Siguiente">⏭</button>
+    <button class="tts-pick-btn" id="ttsPickBtn" title="Clic en el texto para empezar desde ahí">🎯</button>
   </div>
   <div class="tts-progress-wrap">
     <div class="tts-sentence-preview" id="ttsSentencePreview">—</div>
@@ -1306,55 +1359,267 @@ document.querySelectorAll('.pomo-mode-btn').forEach(b=>b.addEventListener('click
 pomoUpdateUI();
 
 // ── TTS ──────────────────────────────────────────────────────
-let ttsSentences=[],ttsIndex=0,ttsUtterance=null,ttsPlaying=false;
-const TTS_SPEEDS=[0.75,1,1.25,1.5,1.75,2]; let ttsSpeedIdx=1;
-function ttsExtract(raw){return raw.replace(/```[\s\S]*?```/g,'').replace(/`[^`]+`/g,'').replace(/!\[.*?\]\(.*?\)/g,'').replace(/\[([^\]]+)\]\(.*?\)/g,'$1').replace(/^#{1,6}\s+/gm,'').replace(/\*{1,3}(.+?)\*{1,3}/g,'$1').replace(/_{1,3}(.+?)_{1,3}/g,'$1').replace(/~~(.+?)~~/g,'$1').replace(/^[-*+\d.] /gm,'').replace(/^[>|].*/gm,'').replace(/^---+$/gm,'').replace(/\n{2,}/g,'\n').trim();}
-function ttsSplit(t){return t.split(/(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÜÑ"«\d])/).map(s=>s.trim()).filter(s=>s.length>2);}
-function ttsUpdateUI(){
-  const prev=document.getElementById('ttsSentencePreview'), fill=document.getElementById('ttsProgressFill');
-  const play=document.getElementById('ttsPlay'), pause=document.getElementById('ttsPause'), spd=document.getElementById('ttsSpeedBtn');
-  if(!prev) return;
-  prev.textContent=ttsSentences[ttsIndex]||'—';
-  fill.style.width=(ttsSentences.length>1?ttsIndex/(ttsSentences.length-1)*100:0)+'%';
-  if(spd) spd.textContent=TTS_SPEEDS[ttsSpeedIdx]+'×';
-  play.style.display=ttsPlaying?'none':''; pause.style.display=ttsPlaying?'':'none';
+let ttsSentences=[], ttsIndex=0, ttsPlaying=false;
+const TTS_SPEEDS=[0.75,1,1.25,1.5,1.75,2,2.5,3]; let ttsSpeedIdx=1;
+
+/* Strip markdown to plain text */
+function ttsExtract(raw){
+  return raw
+    .replace(/```[\s\S]*?```/g,'').replace(/`[^`]+`/g,'')
+    .replace(/!\[.*?\]\(.*?\)/g,'').replace(/\[([^\]]+)\]\(.*?\)/g,'$1')
+    .replace(/^#{1,6}\s+/gm,'').replace(/\*{1,3}(.+?)\*{1,3}/g,'$1')
+    .replace(/_{1,3}(.+?)_{1,3}/g,'$1').replace(/~~(.+?)~~/g,'$1')
+    .replace(/^[-*+\d.]\s/gm,'').replace(/^[>|].*/gm,'')
+    .replace(/^---+$/gm,'').replace(/\n{2,}/g,'\n').trim();
 }
-function ttsHighlight(idx){
-  document.querySelectorAll('.tts-reading').forEach(e=>e.classList.remove('tts-reading'));
-  if(!ttsSentences[idx]) return;
-  const target=ttsSentences[idx].slice(0,20);
-  const container=document.querySelector('.md-rendered'); if(!container) return;
-  const walker=document.createTreeWalker(container,NodeFilter.SHOW_TEXT);
+
+/* Split plain text into sentences */
+function ttsSplit(t){
+  return t.split(/(?<=[.!?…])\s+/).map(s=>s.trim()).filter(s=>s.length>3);
+}
+
+/* Inject <span id="tts-s-N"> around each sentence in .md-rendered */
+function ttsInjectSpans(sentences){
+  const container = document.querySelector('.md-rendered');
+  if(!container) return;
+
+  // Walk all text nodes, rebuild with spans around matching sentences
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
   let node;
-  while((node=walker.nextNode())){if(node.textContent.includes(target)){const p=node.parentElement;if(p&&!p.classList.contains('tts-reading')){p.classList.add('tts-reading');p.scrollIntoView({behavior:'smooth',block:'center'});break;}}}
+  while((node=walker.nextNode())){
+    // Skip nodes inside <code> or <pre>
+    if(node.parentElement.closest('pre,code')) continue;
+    textNodes.push(node);
+  }
+
+  // Build a map: full concatenated text → position
+  let fullText = textNodes.map(n=>n.textContent).join('\uFFFE'); // use separator
+  let offset = 0;
+  const nodeOffsets = textNodes.map(n=>{
+    const start=offset; offset+=n.textContent.length+1; return {node,start,len:n.textContent.length};
+  });
+
+  // For each sentence, find its position in the full text and mark the node
+  sentences.forEach((sentence, idx) => {
+    const needle = sentence.slice(0,30); // first 30 chars for matching
+    const pos = fullText.indexOf(needle);
+    if(pos === -1) return;
+
+    // Find which node contains this position
+    let cumLen = 0;
+    for(const no of nodeOffsets){
+      if(pos >= no.start && pos < no.start + no.len){
+        // Wrap the parent element (p, li, h1...) with a data attribute
+        const parent = no.node.parentElement;
+        if(parent && !parent.dataset.ttsIdx){
+          parent.dataset.ttsIdx = idx;
+        }
+        break;
+      }
+    }
+  });
 }
+
+/* Highlight the current sentence span and scroll to it */
+function ttsHighlight(idx){
+  document.querySelectorAll('.tts-reading').forEach(e=>{
+    e.classList.remove('tts-reading');
+    e.style.background='';
+    e.style.borderRadius='';
+    e.style.transition='';
+  });
+
+  // Try data-tts-idx first (injected approach)
+  let target = document.querySelector(`[data-tts-idx="${idx}"]`);
+
+  // Fallback: search text nodes for the sentence text
+  if(!target){
+    const sentence = ttsSentences[idx];
+    if(!sentence) return;
+    const needle = sentence.slice(0,25).trim();
+    const container = document.querySelector('.md-rendered');
+    if(!container) return;
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+    let node;
+    while((node=walker.nextNode())){
+      if(node.parentElement.closest('pre,code')) continue;
+      if(node.textContent.includes(needle)){
+        target = node.parentElement;
+        break;
+      }
+    }
+  }
+
+  if(target){
+    target.classList.add('tts-reading');
+    target.style.background='rgba(255,236,100,0.55)';
+    target.style.borderRadius='3px';
+    target.style.transition='background 0.25s ease';
+    target.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+}
+
+function ttsUpdateUI(){
+  const prev=document.getElementById('ttsSentencePreview');
+  const fill=document.getElementById('ttsProgressFill');
+  const play=document.getElementById('ttsPlay'), pause=document.getElementById('ttsPause');
+  const spd=document.getElementById('ttsSpeedBtn');
+  if(!prev) return;
+  prev.textContent = ttsSentences[ttsIndex]||'—';
+  fill.style.width = (ttsSentences.length>1 ? ttsIndex/(ttsSentences.length-1)*100 : 0)+'%';
+  if(spd) spd.textContent = TTS_SPEEDS[ttsSpeedIdx]+'×';
+  play.style.display  = ttsPlaying?'none':'';
+  pause.style.display = ttsPlaying?'':'none';
+}
+
 function ttsSpeak(idx){
   window.speechSynthesis.cancel();
-  if(idx>=ttsSentences.length){ttsPlaying=false;ttsIndex=0;document.querySelectorAll('.tts-reading').forEach(e=>e.classList.remove('tts-reading'));ttsUpdateUI();return;}
-  ttsIndex=idx; ttsHighlight(idx); ttsUpdateUI();
-  const utt=new SpeechSynthesisUtterance(ttsSentences[idx]);
+  if(idx>=ttsSentences.length){
+    ttsPlaying=false; ttsIndex=0;
+    document.querySelectorAll('.tts-reading').forEach(e=>{e.classList.remove('tts-reading');e.style.background='';});
+    ttsUpdateUI(); return;
+  }
+  ttsIndex=idx;
+  ttsHighlight(idx);
+  ttsUpdateUI();
+
+  const utt = new SpeechSynthesisUtterance(ttsSentences[idx]);
   utt.lang='es-ES'; utt.rate=TTS_SPEEDS[ttsSpeedIdx];
-  const v=window.speechSynthesis.getVoices().find(v=>v.lang.startsWith('es')); if(v) utt.voice=v;
-  utt.onend=()=>{if(ttsPlaying)ttsSpeak(idx+1);}; utt.onerror=()=>{if(ttsPlaying)ttsSpeak(idx+1);};
-  ttsUtterance=utt; window.speechSynthesis.speak(utt);
+  const voices=window.speechSynthesis.getVoices();
+  const esVoice=voices.find(v=>v.lang==='es-ES')||voices.find(v=>v.lang.startsWith('es'));
+  if(esVoice) utt.voice=esVoice;
+  utt.onend  = ()=>{ if(ttsPlaying) ttsSpeak(idx+1); };
+  utt.onerror = ()=>{ if(ttsPlaying) ttsSpeak(idx+1); };
+  window.speechSynthesis.speak(utt);
 }
+
 function ttsLaunch(){
   if(!activeId) return;
   const file=files.find(f=>f.id===activeId); if(!file) return;
-  ttsSentences=ttsSplit(ttsExtract(file.raw)); ttsIndex=0; ttsPlaying=true;
-  document.getElementById('ttsBar').classList.add('visible'); ttsSpeak(0);
+  ttsSentences = ttsSplit(ttsExtract(file.raw));
+  ttsIndex=0; ttsPlaying=true;
+  document.getElementById('ttsBar').classList.add('visible');
+  // Inject spans after a tick so the DOM is ready
+  setTimeout(()=>{ ttsInjectSpans(ttsSentences); ttsSpeak(0); }, 80);
 }
-function ttsPlay(){if(!ttsSentences.length){ttsLaunch();return;}ttsPlaying=true;ttsSpeak(ttsIndex);}
-function ttsPauseF(){ttsPlaying=false;window.speechSynthesis.cancel();ttsUpdateUI();}
-function ttsStopF(){ttsPlaying=false;ttsIndex=0;window.speechSynthesis.cancel();document.querySelectorAll('.tts-reading').forEach(e=>e.classList.remove('tts-reading'));document.getElementById('ttsBar').classList.remove('visible');ttsUpdateUI();}
+
+function ttsPlay(){
+  if(!ttsSentences.length){ ttsLaunch(); return; }
+  ttsPlaying=true; ttsSpeak(ttsIndex);
+}
+function ttsPauseF(){
+  ttsPlaying=false; window.speechSynthesis.cancel();
+  ttsUpdateUI();
+}
+function ttsStopF(){
+  ttsPlaying=false; ttsIndex=0; window.speechSynthesis.cancel();
+  document.querySelectorAll('.tts-reading').forEach(e=>{e.classList.remove('tts-reading');e.style.background='';});
+  document.querySelectorAll('[data-tts-idx]').forEach(e=>e.removeAttribute('data-tts-idx'));
+  document.getElementById('ttsBar').classList.remove('visible');
+  ttsExitPickMode();
+  ttsUpdateUI();
+}
+
+// ── TTS PICK MODE (click-to-start) ───────────────────────────
+let ttsPickActive = false;
+
+function ttsEnterPickMode(){
+  if(!ttsSentences.length){
+    // Prepare sentences and inject spans first, then enter pick mode
+    if(!activeId) return;
+    const file=files.find(f=>f.id===activeId); if(!file) return;
+    ttsSentences=ttsSplit(ttsExtract(file.raw));
+    document.getElementById('ttsBar').classList.add('visible');
+    setTimeout(()=>{ ttsInjectSpans(ttsSentences); _activatePickMode(); }, 80);
+  } else {
+    if(!document.querySelector('[data-tts-idx]')) ttsInjectSpans(ttsSentences);
+    _activatePickMode();
+  }
+}
+
+function _activatePickMode(){
+  ttsPickActive=true;
+  document.getElementById('ttsPickBtn').classList.add('active');
+
+  // Add banner above content
+  const main=document.getElementById('main');
+  let banner=document.getElementById('ttsSelectBanner');
+  if(!banner){
+    banner=document.createElement('div');
+    banner.id='ttsSelectBanner';
+    banner.className='tts-select-banner';
+    banner.innerHTML=`<span>🎯 Haz clic en cualquier párrafo para empezar a leer desde ahí</span>
+      <button id="ttsCancelPickBtn">Cancelar</button>`;
+    main.prepend(banner);
+    document.getElementById('ttsCancelPickBtn').addEventListener('click', ttsExitPickMode);
+  }
+
+  // Add selectable class to main for CSS hover styles
+  main.classList.add('tts-selectable');
+
+  // Attach click listeners to all readable elements
+  document.querySelectorAll('.md-rendered p, .md-rendered li, .md-rendered h1, .md-rendered h2, .md-rendered h3, .md-rendered h4').forEach(el=>{
+    el.addEventListener('click', ttsHandlePickClick, {once:true});
+  });
+}
+
+function ttsExitPickMode(){
+  ttsPickActive=false;
+  const btn=document.getElementById('ttsPickBtn');
+  if(btn) btn.classList.remove('active');
+  document.getElementById('main').classList.remove('tts-selectable');
+  const banner=document.getElementById('ttsSelectBanner');
+  if(banner) banner.remove();
+  // Remove leftover listeners by replacing elements (simplest approach)
+  document.querySelectorAll('.md-rendered p, .md-rendered li, .md-rendered h1, .md-rendered h2, .md-rendered h3, .md-rendered h4').forEach(el=>{
+    el.removeEventListener('click', ttsHandlePickClick);
+  });
+}
+
+function ttsHandlePickClick(e){
+  ttsExitPickMode();
+  const el=e.currentTarget;
+  // Find the sentence index for this element
+  let startIdx=0;
+  if(el.dataset.ttsIdx !== undefined){
+    startIdx=parseInt(el.dataset.ttsIdx)||0;
+  } else {
+    // Fallback: find by text match
+    const text=el.textContent.trim().slice(0,20);
+    const found=ttsSentences.findIndex(s=>s.includes(text));
+    if(found>-1) startIdx=found;
+  }
+  ttsPlaying=true;
+  ttsSpeak(startIdx);
+}
+
 document.getElementById('ttsPlay').addEventListener('click',ttsPlay);
 document.getElementById('ttsPause').addEventListener('click',ttsPauseF);
 document.getElementById('ttsStop').addEventListener('click',ttsStopF);
-document.getElementById('ttsPrev').addEventListener('click',()=>{const i=Math.max(0,ttsIndex-1);if(ttsPlaying)ttsSpeak(i);else{ttsIndex=i;ttsHighlight(i);ttsUpdateUI();}});
-document.getElementById('ttsNext').addEventListener('click',()=>{const i=Math.min(ttsSentences.length-1,ttsIndex+1);if(ttsPlaying)ttsSpeak(i);else{ttsIndex=i;ttsHighlight(i);ttsUpdateUI();}});
-document.getElementById('ttsSpeedBtn').addEventListener('click',()=>{ttsSpeedIdx=(ttsSpeedIdx+1)%TTS_SPEEDS.length;ttsUpdateUI();if(ttsPlaying)ttsSpeak(ttsIndex);});
+document.getElementById('ttsPickBtn').addEventListener('click',()=>{
+  if(ttsPickActive) ttsExitPickMode(); else ttsEnterPickMode();
+});
+document.getElementById('ttsPrev').addEventListener('click',()=>{
+  const i=Math.max(0,ttsIndex-1);
+  if(ttsPlaying) ttsSpeak(i); else{ttsIndex=i;ttsHighlight(i);ttsUpdateUI();}
+});
+document.getElementById('ttsNext').addEventListener('click',()=>{
+  const i=Math.min(ttsSentences.length-1,ttsIndex+1);
+  if(ttsPlaying) ttsSpeak(i); else{ttsIndex=i;ttsHighlight(i);ttsUpdateUI();}
+});
+document.getElementById('ttsSpeedBtn').addEventListener('click',()=>{
+  ttsSpeedIdx=(ttsSpeedIdx+1)%TTS_SPEEDS.length;
+  ttsUpdateUI();
+  if(ttsPlaying) ttsSpeak(ttsIndex);
+});
 document.getElementById('ttsClose').addEventListener('click',ttsStopF);
-document.getElementById('ttsTrack').addEventListener('click',e=>{if(!ttsSentences.length)return;const pct=(e.clientX-e.currentTarget.getBoundingClientRect().left)/e.currentTarget.getBoundingClientRect().width;const i=Math.round(pct*(ttsSentences.length-1));if(ttsPlaying)ttsSpeak(i);else{ttsIndex=i;ttsHighlight(i);ttsUpdateUI();}});
+document.getElementById('ttsTrack').addEventListener('click',e=>{
+  if(!ttsSentences.length) return;
+  const pct=(e.clientX-e.currentTarget.getBoundingClientRect().left)/e.currentTarget.getBoundingClientRect().width;
+  const i=Math.round(pct*(ttsSentences.length-1));
+  if(ttsPlaying) ttsSpeak(i); else{ttsIndex=i;ttsHighlight(i);ttsUpdateUI();}
+});
 window.speechSynthesis.onvoiceschanged=()=>{};
 
 // ── BOOKMARKS ────────────────────────────────────────────────
