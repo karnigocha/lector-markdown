@@ -13,7 +13,9 @@
     --accent: #c0392b;
     --accent-muted: #e8d5d3;
     --rule: #c8bfad;
-    --sidebar-w: 320px;
+    --sidebar-w: 300px;
+    --header-h: 56px;
+    --focusbar-h: 48px;
     --font-size: 18px;
     --hl-yellow: #fff176cc;
     --hl-green:  #b9f6cacc;
@@ -28,881 +30,560 @@
     color: var(--ink);
     font-family: 'Crimson Pro', Georgia, serif;
     font-size: var(--font-size);
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden; /* body nunca hace scroll — solo .main lo hace */
     display: flex;
     flex-direction: column;
   }
 
-  /* HEADER */
+  /* ── HEADER ─────────────────────────────────────────── */
   header {
+    flex-shrink: 0;
+    height: var(--header-h);
     background: var(--ink);
     color: var(--paper);
-    padding: 0 2rem;
+    padding: 0 1.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 56px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
     border-bottom: 3px solid var(--accent);
-    flex-shrink: 0;
+    z-index: 100;
   }
   .logo {
     font-family: 'Playfair Display', serif;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     letter-spacing: 0.08em;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    display: flex; align-items: center; gap: 10px;
   }
   .logo-mark {
-    width: 28px; height: 28px;
+    width: 26px; height: 26px;
     background: var(--accent);
     display: flex; align-items: center; justify-content: center;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: white;
-    flex-shrink: 0;
+    font-size: 0.72rem; font-weight: 500; color: white; flex-shrink: 0;
   }
-  .header-actions { display: flex; gap: 12px; align-items: center; }
-
+  .header-actions { display: flex; gap: 8px; align-items: center; }
   .btn {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    padding: 6px 14px;
+    font-size: 0.68rem; letter-spacing: 0.1em;
+    padding: 5px 12px;
     border: 1px solid rgba(245,240,232,0.3);
-    background: transparent;
-    color: var(--paper);
-    cursor: pointer;
-    transition: all 0.2s;
-    text-transform: uppercase;
+    background: transparent; color: var(--paper);
+    cursor: pointer; transition: all 0.2s; text-transform: uppercase;
   }
   .btn:hover { background: var(--accent); border-color: var(--accent); }
   .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
   .btn-primary:hover { background: #a93226; }
-
-  /* LAYOUT */
-  .app-body {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-    height: calc(100vh - 56px);
+  .btn-icon {
+    background: none; border: 1px solid rgba(245,240,232,0.25);
+    color: var(--paper); font-size: 1rem; padding: 4px 9px;
+    cursor: pointer; transition: all 0.15s;
   }
+  .btn-icon:hover { background: var(--accent); border-color: var(--accent); }
 
-  /* SIDEBAR */
-  .sidebar {
-    width: var(--sidebar-w);
-    background: var(--ink);
-    color: var(--paper);
-    display: flex;
-    flex-direction: column;
+  /* ── FOCUS BAR (pomodoro) ───────────────────────────── */
+  .focus-bar {
     flex-shrink: 0;
-    border-right: 3px solid var(--accent);
-    transition: width 0.3s ease;
-    overflow: hidden;
-  }
-  .sidebar.collapsed { width: 0; border-right: none; }
-  .sidebar-header {
-    padding: 1.2rem 1.5rem 1rem;
-    border-bottom: 1px solid rgba(200,191,173,0.2);
-  }
-  .sidebar-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--rule);
-    margin-bottom: 0.8rem;
-  }
-  .drop-zone {
-    border: 1.5px dashed rgba(200,191,173,0.4);
-    padding: 1.2rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--rule);
-    letter-spacing: 0.05em;
-  }
-  .drop-zone:hover, .drop-zone.dragover {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: rgba(192,57,43,0.05);
-  }
-  .drop-icon { font-size: 1.4rem; margin-bottom: 0.4rem; display: block; }
-  .file-list { flex: 1; overflow-y: auto; padding: 0.5rem 0; }
-  .file-list::-webkit-scrollbar { width: 4px; }
-  .file-list::-webkit-scrollbar-thumb { background: rgba(200,191,173,0.3); }
-  .file-item {
-    padding: 0.7rem 1.5rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-left: 3px solid transparent;
-    transition: all 0.15s;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    color: rgba(245,240,232,0.7);
-    letter-spacing: 0.02em;
-  }
-  .file-item:hover { background: rgba(245,240,232,0.05); color: var(--paper); border-left-color: rgba(200,191,173,0.4); }
-  .file-item.active { background: rgba(192,57,43,0.12); color: var(--paper); border-left-color: var(--accent); }
-  .file-icon { color: var(--accent); flex-shrink: 0; font-size: 0.9rem; }
-  .file-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .file-remove {
-    opacity: 0; background: none; border: none; color: var(--rule);
-    cursor: pointer; font-size: 0.85rem; padding: 2px 4px; transition: all 0.15s;
-  }
-  .file-item:hover .file-remove { opacity: 1; }
-  .file-remove:hover { color: var(--accent); }
-  .sidebar-footer {
-    padding: 0.8rem 1.5rem;
-    border-top: 1px solid rgba(200,191,173,0.2);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    color: rgba(200,191,173,0.5);
-    letter-spacing: 0.05em;
-  }
-
-  /* NOTES PANEL in sidebar */
-  .notes-panel {
-    border-top: 1px solid rgba(200,191,173,0.2);
-    padding: 1rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    max-height: 260px;
-  }
-  .notes-panel-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--rule);
-  }
-  #notesTextarea {
-    background: rgba(245,240,232,0.07);
-    border: 1px solid rgba(200,191,173,0.25);
-    color: var(--paper);
-    font-family: 'Crimson Pro', serif;
-    font-size: 0.88rem;
-    padding: 0.6rem;
-    resize: vertical;
-    min-height: 90px;
-    line-height: 1.6;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  #notesTextarea:focus { border-color: var(--accent); }
-  #notesTextarea::placeholder { color: rgba(200,191,173,0.4); font-style: italic; }
-  .notes-hint {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.6rem;
-    color: rgba(200,191,173,0.4);
-    letter-spacing: 0.04em;
-  }
-
-  /* MAIN */
-  .main { flex: 1; overflow-y: auto; position: relative; background: var(--paper); }
-  .main::-webkit-scrollbar { width: 6px; }
-  .main::-webkit-scrollbar-track { background: var(--paper-dark); }
-  .main::-webkit-scrollbar-thumb { background: var(--rule); }
-
-  /* TOOLBAR */
-  .toolbar {
-    position: sticky;
-    top: 0;
-    background: var(--paper-dark);
-    border-bottom: 1px solid var(--rule);
-    padding: 0.4rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 10;
-    gap: 0.8rem;
-    flex-wrap: wrap;
-  }
-  .toolbar-left { display: flex; align-items: center; gap: 0.6rem; }
-  .toolbar-right { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-
-  .toggle-sidebar {
-    background: none;
-    border: 1px solid var(--rule);
-    cursor: pointer;
-    padding: 4px 8px;
-    color: var(--ink);
-    font-size: 1rem;
-    transition: all 0.2s;
+    height: var(--focusbar-h);
+    background: #111;
+    border-bottom: 2px solid var(--accent);
     display: flex; align-items: center;
-  }
-  .toggle-sidebar:hover { background: var(--ink); color: var(--paper); }
-
-  /* TTS launch button in toolbar-left */
-  .tts-launch-main {
-    background: var(--accent);
-    border: none;
-    color: white;
-    font-size: 1.1rem;
-    width: 34px; height: 34px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    transition: all 0.15s;
-    flex-shrink: 0;
-  }
-  .tts-launch-main:hover { background: #a93226; transform: scale(1.08); }
-
-  .file-title-display {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    color: rgba(26,26,26,0.5);
-    letter-spacing: 0.05em;
-    max-width: 200px;
-    white-space: nowrap;
+    gap: 0.9rem; padding: 0 1.2rem;
+    z-index: 90;
     overflow: hidden;
-    text-overflow: ellipsis;
   }
-
-  /* Font size control */
-  .font-size-control {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    border: 1px solid var(--rule);
-    padding: 3px 8px;
-  }
-  .font-size-label {
+  .focus-bar-label {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: rgba(26,26,26,0.4);
-    white-space: nowrap;
-  }
-  .font-size-value {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
-    font-weight: 500;
-    color: var(--ink);
-    min-width: 26px;
-    text-align: right;
-  }
-  input[type="range"].font-slider {
-    -webkit-appearance: none; appearance: none;
-    width: 80px; height: 3px;
-    background: var(--rule); outline: none; cursor: pointer;
-  }
-  input[type="range"].font-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
-    width: 12px; height: 12px; background: var(--accent); cursor: pointer;
-  }
-  input[type="range"].font-slider::-moz-range-thumb {
-    width: 12px; height: 12px; background: var(--accent); border: none; cursor: pointer;
-  }
-
-  /* Highlight color picker */
-  .hl-picker {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    border: 1px solid var(--rule);
-    padding: 3px 8px;
-  }
-  .hl-picker-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: rgba(26,26,26,0.4);
-    margin-right: 2px;
-  }
-  .hl-swatch {
-    width: 16px; height: 16px;
-    border-radius: 2px;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: border-color 0.15s, transform 0.15s;
-  }
-  .hl-swatch.active { border-color: var(--ink); transform: scale(1.2); }
-  .hl-swatch:hover { transform: scale(1.15); }
-
-  .view-toggle { display: flex; border: 1px solid var(--rule); overflow: hidden; }
-  .view-btn {
-    background: none; border: none; padding: 5px 10px; cursor: pointer;
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: rgba(26,26,26,0.5); transition: all 0.15s;
-  }
-  .view-btn.active { background: var(--ink); color: var(--paper); }
-  .view-btn:hover:not(.active) { background: var(--paper-dark); color: var(--ink); }
-
-  /* AI summary button */
-  .btn-summary {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
-    padding: 5px 10px;
-    border: 1px solid var(--rule);
-    background: transparent;
-    color: var(--ink);
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    white-space: nowrap;
-  }
-  .btn-summary:hover { background: var(--ink); color: var(--paper); }
-  .btn-summary.loading { opacity: 0.6; cursor: default; }
-
-  /* EMPTY STATE */
-  .empty-state {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    height: 100%; min-height: 60vh; gap: 1.5rem; padding: 2rem; text-align: center;
-  }
-  .empty-state-mark { font-family: 'Playfair Display', serif; font-size: 5rem; color: var(--rule); line-height: 1; font-style: italic; }
-  .empty-state h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--ink); font-weight: 400; }
-  .empty-state p { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: rgba(26,26,26,0.4); letter-spacing: 0.05em; max-width: 340px; line-height: 1.7; }
-
-  /* CONTENT AREA */
-  .content-area {
-    max-width: 660px;        /* más estrecho = líneas más cortas, más fácil de leer */
-    margin: 0 auto;
-    padding: 3.5rem 3rem 6rem;
-  }
-
-  /* META BAR */
-  .meta-bar {
-    padding: 0.8rem 3rem;
-    border-bottom: 1px solid var(--rule);
-    display: flex; gap: 2rem;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem; letter-spacing: 0.08em;
-    color: rgba(26,26,26,0.45); text-transform: uppercase;
-    max-width: 660px; margin: 0 auto;
-  }
-
-  /* MARKDOWN RENDERED */
-  .md-rendered {
-    line-height: 1.9;        /* más espacio entre líneas */
-    color: var(--ink);
-  }
-
-  .md-rendered h1 {
-    font-family: 'Playfair Display', serif; font-size: 2.4rem; font-weight: 700;
-    line-height: 1.2; margin: 0 0 1.2rem; color: var(--ink);
-  }
-  .md-rendered h2 {
-    font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 400;
-    font-style: italic; margin: 3rem 0 1.2rem; padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--rule); color: var(--ink);
-  }
-  .md-rendered h3 {
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; font-weight: 500;
-    letter-spacing: 0.12em; text-transform: uppercase; margin: 2.5rem 0 1rem; color: var(--accent);
-  }
-  .md-rendered h4, .md-rendered h5, .md-rendered h6 {
-    font-family: 'Playfair Display', serif; font-size: 1.1rem; margin: 2rem 0 0.8rem;
-  }
-  .md-rendered p {
-    margin: 0 0 1.6rem;      /* más espacio entre párrafos */
-  }
-  .md-rendered p:first-of-type::first-letter {
-    font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 700;
-    line-height: 0.8; float: left; margin: 0.05em 0.1em 0 0; color: var(--accent);
-  }
-  .md-rendered hr {
-    border: none; border-top: 1px solid var(--rule); margin: 3rem 0; position: relative;
-  }
-  .md-rendered hr::after {
-    content: '◆'; position: absolute; left: 50%; top: 50%;
-    transform: translate(-50%, -50%); background: var(--paper);
-    padding: 0 0.8rem; color: var(--rule); font-size: 0.6rem;
-  }
-  .md-rendered strong { font-weight: 600; color: var(--ink); }
-  .md-rendered em { font-style: italic; }
-  .md-rendered a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-muted); transition: border-color 0.2s; }
-  .md-rendered a:hover { border-color: var(--accent); }
-  .md-rendered code {
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.82em;
-    background: var(--paper-dark); border: 1px solid var(--rule); padding: 2px 6px; color: var(--accent);
-  }
-  .md-rendered pre {
-    background: var(--ink); border-left: 3px solid var(--accent);
-    padding: 1.5rem 1.8rem; margin: 2rem 0; overflow-x: auto;
-  }
-  .md-rendered pre code { background: transparent; border: none; color: var(--paper); font-size: 0.82rem; padding: 0; }
-  .md-rendered blockquote {
-    border-left: 3px solid var(--accent); padding: 1rem 0 1rem 1.8rem;
-    margin: 2rem 0; background: var(--paper-dark); font-style: italic; font-size: 1.05em;
-  }
-  .md-rendered ul, .md-rendered ol { margin: 1rem 0 1.6rem 1.8rem; }
-  .md-rendered li { margin-bottom: 0.5rem; line-height: 1.75; }
-  .md-rendered ul li::marker { color: var(--accent); }
-  .md-rendered table { width: 100%; border-collapse: collapse; margin: 2rem 0; font-size: 0.9em; }
-  .md-rendered th {
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.7em; letter-spacing: 0.1em;
-    text-transform: uppercase; background: var(--ink); color: var(--paper);
-    padding: 0.6rem 0.8rem; text-align: left; border: 1px solid var(--ink);
-  }
-  .md-rendered td { padding: 0.55rem 0.8rem; border: 1px solid var(--rule); }
-  .md-rendered tr:nth-child(even) td { background: var(--paper-dark); }
-  .md-rendered img { max-width: 100%; height: auto; display: block; margin: 1.5rem auto; border: 1px solid var(--rule); }
-
-  /* HIGHLIGHTS */
-  mark.hl { border-radius: 2px; padding: 0 2px; cursor: pointer; }
-  mark.hl:hover::after { content: ' ✕'; font-size: 0.7em; opacity: 0.6; }
-  mark.hl-yellow { background: var(--hl-yellow); }
-  mark.hl-green  { background: var(--hl-green); }
-  mark.hl-blue   { background: var(--hl-blue); }
-  mark.hl-pink   { background: var(--hl-pink); }
-
-  /* RAW VIEW */
-  .md-raw {
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; line-height: 1.8;
-    color: var(--ink); white-space: pre-wrap; word-break: break-word;
-    background: var(--paper-dark); padding: 2rem; border: 1px solid var(--rule); min-height: 200px;
-  }
-
-  /* SPLIT VIEW */
-  .split-view { display: grid; grid-template-columns: 1fr 1fr; gap: 0; height: 100%; }
-  .split-pane { overflow-y: auto; height: calc(100vh - 112px); }
-  .split-pane:first-child { border-right: 1px solid var(--rule); }
-  .split-pane .md-raw { margin: 0; border: none; height: 100%; min-height: 100%; background: #1e1e1e; color: #d4d0c8; border-radius: 0; }
-  .split-pane .content-area { padding: 2rem 2rem 4rem; }
-
-  /* SUMMARY PANEL */
-  .summary-panel {
-    background: var(--paper-dark);
-    border: 1px solid var(--rule);
-    border-left: 3px solid var(--accent);
-    margin: 1.5rem 0;
-    padding: 1.2rem 1.5rem;
-    position: relative;
-  }
-  .summary-panel-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 0.8rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .summary-close {
-    background: none; border: none; cursor: pointer;
-    color: rgba(26,26,26,0.4); font-size: 0.9rem;
-    transition: color 0.15s;
-  }
-  .summary-close:hover { color: var(--accent); }
-  .summary-content {
-    font-family: 'Crimson Pro', serif;
-    font-size: 1rem;
-    line-height: 1.7;
-    color: var(--ink);
-  }
-  .summary-content ul { margin: 0.6rem 0 0 1.2rem; }
-  .summary-content li { margin-bottom: 0.3rem; }
-  .summary-loading {
-    display: flex; align-items: center; gap: 0.6rem;
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem;
-    color: rgba(26,26,26,0.5); letter-spacing: 0.05em;
-  }
-  .spinner {
-    width: 14px; height: 14px;
-    border: 2px solid var(--rule);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ANIMATIONS */
-  .content-area { animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-
-  #fileInput { display: none; }
-
-  /* POMODORO */
-  .pomodoro-panel {
-    border-top: 1px solid rgba(200,191,173,0.2);
-    padding: 1rem 1.5rem 1.2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.8rem;
-  }
-  .pomodoro-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--rule);
-    width: 100%;
+    font-size: 0.6rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--rule);
+    white-space: nowrap; flex-shrink: 0;
   }
   .pomodoro-modes {
-    display: flex;
-    width: 100%;
-    border: 1px solid rgba(200,191,173,0.2);
-    overflow: hidden;
+    display: flex; border: 1px solid rgba(200,191,173,0.2); overflow: hidden; flex-shrink: 0;
   }
   .pomo-mode-btn {
-    flex: 1;
-    background: none;
-    border: none;
+    background: none; border: none;
     color: rgba(245,240,232,0.45);
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.58rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 5px 4px;
-    cursor: pointer;
-    transition: all 0.15s;
+    font-size: 0.58rem; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 4px 8px; cursor: pointer; transition: all 0.15s;
     border-right: 1px solid rgba(200,191,173,0.2);
   }
   .pomo-mode-btn:last-child { border-right: none; }
   .pomo-mode-btn.active { background: var(--accent); color: white; }
   .pomo-mode-btn:hover:not(.active) { background: rgba(245,240,232,0.07); color: var(--paper); }
 
-  .pomodoro-ring {
-    position: relative;
-    width: 110px;
-    height: 110px;
-  }
-  .pomodoro-ring svg {
-    transform: rotate(-90deg);
-    width: 110px; height: 110px;
-  }
-  .pomo-track { fill: none; stroke: rgba(200,191,173,0.15); stroke-width: 6; }
-  .pomo-progress { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.5s linear; }
+  .pomo-ring-wrap { position: relative; width: 34px; height: 34px; flex-shrink: 0; }
+  .pomo-ring-wrap svg { transform: rotate(-90deg); width: 34px; height: 34px; }
+  .pomo-track  { fill: none; stroke: rgba(200,191,173,0.15); stroke-width: 7; }
+  .pomo-progress { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset 0.5s linear; }
   .pomo-progress.break { stroke: #4caf50; }
-  .pomodoro-time {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
+  .pomo-ring-time {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
   }
+
   .pomo-clock {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 1.5rem;
-    font-weight: 500;
-    color: var(--paper);
-    letter-spacing: 0.05em;
+    font-size: 1.18rem; font-weight: 500; color: var(--paper);
+    letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0;
   }
   .pomo-label {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.55rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--rule);
+    font-size: 0.55rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--rule);
+    white-space: nowrap; flex-shrink: 0;
   }
-  .pomodoro-controls {
-    display: flex;
-    gap: 0.5rem;
-  }
+  .pomo-controls { display: flex; gap: 4px; flex-shrink: 0; }
   .pomo-btn {
-    background: none;
-    border: 1px solid rgba(200,191,173,0.3);
-    color: var(--paper);
-    font-size: 1rem;
-    width: 34px; height: 34px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s;
+    background: none; border: 1px solid rgba(200,191,173,0.25);
+    color: var(--paper); font-size: 0.85rem;
+    width: 28px; height: 28px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; flex-shrink: 0;
   }
   .pomo-btn:hover { background: var(--accent); border-color: var(--accent); }
-  .pomo-sessions {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-  }
+  .pomo-sessions { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
   .pomo-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: rgba(200,191,173,0.2);
-    transition: background 0.3s;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(200,191,173,0.2); transition: background 0.3s;
   }
   .pomo-dot.done { background: var(--accent); }
   .pomo-sessions-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.58rem;
-    color: rgba(200,191,173,0.4);
-    letter-spacing: 0.06em;
-    margin-left: 4px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem;
+    color: rgba(200,191,173,0.4); letter-spacing: 0.06em; margin-left: 2px;
   }
 
-  /* Toast notification */
-  .pomo-toast {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    background: var(--ink);
-    color: var(--paper);
-    border-left: 3px solid var(--accent);
-    padding: 0.8rem 1.2rem;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-    z-index: 500;
-    animation: slideIn 0.3s ease, fadeOut 0.4s ease 3.6s forwards;
-    max-width: 280px;
-  }
-  .pomo-toast.break-toast { border-left-color: #4caf50; }
-  @keyframes slideIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
-  @keyframes fadeOut { to { opacity:0; transform:translateY(6px); } }
-
-  /* ---- TTS PLAYER ---- */
-  .tts-bar {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: var(--ink);
-    border-top: 2px solid var(--accent);
-    padding: 0.6rem 1.5rem;
+  /* ── APP BODY ────────────────────────────────────────── */
+  /* Esta es la clave: flex row que ocupa el espacio restante exacto */
+  .app-body {
     display: flex;
-    align-items: center;
-    gap: 1rem;
-    z-index: 400;
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-  }
-  .tts-bar.visible { transform: translateY(0); }
-  @media (max-width: 768px) {
-    .tts-bar { bottom: 56px; padding: 0.5rem 1rem; gap: 0.6rem; }
-  }
-  .tts-controls { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
-  .tts-btn {
-    background: none;
-    border: 1px solid rgba(200,191,173,0.3);
-    color: var(--paper);
-    width: 34px; height: 34px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: all 0.15s;
-    flex-shrink: 0;
-  }
-  .tts-btn:hover { background: var(--accent); border-color: var(--accent); }
-  .tts-btn.active { background: var(--accent); border-color: var(--accent); }
-  .tts-progress-wrap {
     flex: 1;
+    min-height: 0; /* CRÍTICO: sin esto flex no limita la altura */
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ─────────────────────────────────────────── */
+  /* El sidebar es flex column y no hace scroll él mismo —
+     su hijo .file-list sí hace scroll interno */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--ink);
+    color: var(--paper);
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    flex-shrink: 0;
+    border-right: 3px solid var(--accent);
+    /* SIN overflow:hidden aquí — cada hijo gestiona su scroll */
+    transition: width 0.25s ease, min-width 0.25s ease;
+  }
+  .sidebar.collapsed {
+    width: 0; min-width: 0; border-right: none; overflow: hidden;
+  }
+
+  .sidebar-header {
+    flex-shrink: 0;
+    padding: 1rem 1.2rem 0.8rem;
+    border-bottom: 1px solid rgba(200,191,173,0.2);
+  }
+  .sidebar-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--rule); margin-bottom: 0.7rem;
+  }
+  .drop-zone {
+    border: 1.5px dashed rgba(200,191,173,0.35);
+    padding: 1rem; text-align: center; cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem; color: var(--rule); letter-spacing: 0.04em;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent); color: var(--accent); background: rgba(192,57,43,0.05);
+  }
+  .drop-icon { font-size: 1.2rem; margin-bottom: 0.3rem; display: block; }
+
+  /* file-list: único elemento con scroll en el sidebar, crece y encoge */
+  .file-list {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0.4rem 0;
+  }
+  .file-list::-webkit-scrollbar { width: 3px; }
+  .file-list::-webkit-scrollbar-thumb { background: rgba(200,191,173,0.3); }
+
+  .file-item {
+    padding: 0.6rem 1.2rem;
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    border-left: 3px solid transparent; transition: all 0.15s;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem; color: rgba(245,240,232,0.65); letter-spacing: 0.02em;
+  }
+  .file-item:hover { background: rgba(245,240,232,0.05); color: var(--paper); border-left-color: rgba(200,191,173,0.4); }
+  .file-item.active { background: rgba(192,57,43,0.12); color: var(--paper); border-left-color: var(--accent); }
+  .file-icon { color: var(--accent); flex-shrink: 0; font-size: 0.85rem; }
+  .file-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-remove {
+    opacity: 0; background: none; border: none; color: var(--rule);
+    cursor: pointer; font-size: 0.8rem; padding: 2px 4px; transition: all 0.15s;
+  }
+  .file-item:hover .file-remove { opacity: 1; }
+  .file-remove:hover { color: var(--accent); }
+
+  .sidebar-footer {
+    flex-shrink: 0;
+    padding: 0.6rem 1.2rem;
+    border-top: 1px solid rgba(200,191,173,0.15);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem; color: rgba(200,191,173,0.4); letter-spacing: 0.05em;
+  }
+
+  /* notes panel: altura fija, no crece */
+  .notes-panel {
+    flex-shrink: 0;
+    border-top: 1px solid rgba(200,191,173,0.2);
+    padding: 0.8rem 1.2rem;
+    display: flex; flex-direction: column; gap: 0.4rem;
+  }
+  .notes-panel-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--rule);
+  }
+  #notesTextarea {
+    background: rgba(245,240,232,0.07);
+    border: 1px solid rgba(200,191,173,0.22);
+    color: var(--paper);
+    font-family: 'Crimson Pro', serif; font-size: 0.85rem;
+    padding: 0.5rem; resize: vertical;
+    min-height: 70px; max-height: 120px;
+    line-height: 1.55; outline: none; transition: border-color 0.2s;
+  }
+  #notesTextarea:focus { border-color: var(--accent); }
+  #notesTextarea::placeholder { color: rgba(200,191,173,0.35); font-style: italic; }
+  .notes-hint {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem;
+    color: rgba(200,191,173,0.35); letter-spacing: 0.04em;
+  }
+
+  /* ── MAIN ────────────────────────────────────────────── */
+  /* Solo .main hace scroll vertical — nada más */
+  .main {
+    flex: 1;
     min-width: 0;
-  }
-  .tts-sentence-preview {
-    font-family: 'Crimson Pro', serif;
-    font-size: 0.82rem;
-    color: rgba(245,240,232,0.6);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-style: italic;
-  }
-  .tts-progress-track {
-    height: 3px;
-    background: rgba(200,191,173,0.2);
-    cursor: pointer;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--paper);
     position: relative;
   }
-  .tts-progress-fill {
-    height: 100%;
-    background: var(--accent);
-    transition: width 0.3s linear;
-    pointer-events: none;
+  .main::-webkit-scrollbar { width: 5px; }
+  .main::-webkit-scrollbar-track { background: var(--paper-dark); }
+  .main::-webkit-scrollbar-thumb { background: var(--rule); }
+
+  /* ── TOOLBAR (sticky dentro de .main) ───────────────── */
+  .toolbar {
+    position: sticky; top: 0;
+    background: var(--paper-dark);
+    border-bottom: 1px solid var(--rule);
+    padding: 0.35rem 1.2rem;
+    display: flex; align-items: center;
+    justify-content: space-between;
+    z-index: 10; gap: 0.6rem; flex-wrap: wrap;
   }
-  .tts-right { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
-  .tts-speed-label {
+  .toolbar-left  { display: flex; align-items: center; gap: 0.5rem; }
+  .toolbar-right { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+  .toggle-sidebar {
+    background: none; border: 1px solid var(--rule);
+    cursor: pointer; padding: 4px 7px; color: var(--ink);
+    font-size: 0.95rem; transition: all 0.2s; display: flex; align-items: center;
+  }
+  .toggle-sidebar:hover { background: var(--ink); color: var(--paper); }
+
+  .tts-launch-main {
+    background: var(--accent); border: none; color: white;
+    font-size: 1rem; width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s; flex-shrink: 0;
+  }
+  .tts-launch-main:hover { background: #a93226; transform: scale(1.07); }
+
+  .file-title-display {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem;
+    color: rgba(26,26,26,0.45); letter-spacing: 0.05em;
+    max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* font size */
+  .font-size-control {
+    display: flex; align-items: center; gap: 4px;
+    border: 1px solid var(--rule); padding: 2px 7px;
+  }
+  .font-size-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem;
+    color: rgba(26,26,26,0.35); white-space: nowrap;
+  }
+  .font-size-value {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem;
+    font-weight: 500; color: var(--ink); min-width: 24px; text-align: right;
+  }
+  input[type="range"].font-slider {
+    -webkit-appearance: none; appearance: none;
+    width: 72px; height: 3px; background: var(--rule); outline: none; cursor: pointer;
+  }
+  input[type="range"].font-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 11px; height: 11px; background: var(--accent); cursor: pointer;
+  }
+  input[type="range"].font-slider::-moz-range-thumb {
+    width: 11px; height: 11px; background: var(--accent); border: none; cursor: pointer;
+  }
+
+  /* highlight picker */
+  .hl-picker {
+    display: flex; align-items: center; gap: 4px;
+    border: 1px solid var(--rule); padding: 2px 7px;
+  }
+  .hl-picker-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem;
+    color: rgba(26,26,26,0.35); margin-right: 1px;
+  }
+  .hl-swatch {
+    width: 15px; height: 15px; border-radius: 2px; cursor: pointer;
+    border: 2px solid transparent; transition: border-color 0.15s, transform 0.15s;
+  }
+  .hl-swatch.active { border-color: var(--ink); transform: scale(1.2); }
+  .hl-swatch:hover  { transform: scale(1.15); }
+
+  .view-toggle { display: flex; border: 1px solid var(--rule); overflow: hidden; }
+  .view-btn {
+    background: none; border: none; padding: 4px 9px; cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(26,26,26,0.45); transition: all 0.15s;
+  }
+  .view-btn.active { background: var(--ink); color: var(--paper); }
+  .view-btn:hover:not(.active) { background: rgba(0,0,0,0.06); }
+
+  .btn-summary {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 0.07em; padding: 4px 9px;
+    border: 1px solid var(--rule); background: transparent; color: var(--ink);
+    cursor: pointer; text-transform: uppercase; transition: all 0.2s;
+    display: flex; align-items: center; gap: 4px; white-space: nowrap;
+  }
+  .btn-summary:hover { background: var(--ink); color: var(--paper); }
+  .btn-summary.loading { opacity: 0.55; cursor: default; }
+
+  /* ── CONTENT ─────────────────────────────────────────── */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 70vh; gap: 1.5rem; padding: 2rem; text-align: center;
+  }
+  .empty-state-mark { font-family: 'Playfair Display', serif; font-size: 4.5rem; color: var(--rule); line-height: 1; font-style: italic; }
+  .empty-state h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--ink); font-weight: 400; }
+  .empty-state p  { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: rgba(26,26,26,0.38); max-width: 320px; line-height: 1.7; }
+
+  .content-area { max-width: 660px; margin: 0 auto; padding: 3.5rem 2.5rem 6rem; }
+
+  .meta-bar {
+    padding: 0.7rem 2.5rem; border-bottom: 1px solid var(--rule);
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.6rem;
-    color: rgba(200,191,173,0.5);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    white-space: nowrap;
+    font-size: 0.62rem; letter-spacing: 0.07em;
+    color: rgba(26,26,26,0.4); text-transform: uppercase;
+    max-width: 660px; margin: 0 auto;
   }
-  .tts-speed {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
-    color: var(--paper);
-    background: none;
-    border: 1px solid rgba(200,191,173,0.3);
-    padding: 3px 6px;
-    cursor: pointer;
-    transition: all 0.15s;
-    width: 52px;
-    text-align: center;
+
+  /* ── MARKDOWN ─────────────────────────────────────────── */
+  .md-rendered { line-height: 1.9; color: var(--ink); }
+  .md-rendered h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin: 0 0 1.2rem; }
+  .md-rendered h2 { font-family: 'Playfair Display', serif; font-size: 1.55rem; font-weight: 400; font-style: italic; margin: 3rem 0 1.1rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--rule); }
+  .md-rendered h3 { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; margin: 2.5rem 0 0.9rem; color: var(--accent); }
+  .md-rendered h4, .md-rendered h5, .md-rendered h6 { font-family: 'Playfair Display', serif; font-size: 1.05rem; margin: 2rem 0 0.7rem; }
+  .md-rendered p { margin: 0 0 1.6rem; }
+  .md-rendered p:first-of-type::first-letter {
+    font-family: 'Playfair Display', serif; font-size: 3.2rem; font-weight: 700;
+    line-height: 0.8; float: left; margin: 0.05em 0.1em 0 0; color: var(--accent);
   }
+  .md-rendered hr { border: none; border-top: 1px solid var(--rule); margin: 3rem 0; position: relative; }
+  .md-rendered hr::after { content: '◆'; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); background: var(--paper); padding: 0 0.7rem; color: var(--rule); font-size: 0.55rem; }
+  .md-rendered strong { font-weight: 600; }
+  .md-rendered em { font-style: italic; }
+  .md-rendered a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-muted); transition: border-color 0.2s; }
+  .md-rendered a:hover { border-color: var(--accent); }
+  .md-rendered code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8em; background: var(--paper-dark); border: 1px solid var(--rule); padding: 2px 5px; color: var(--accent); }
+  .md-rendered pre { background: var(--ink); border-left: 3px solid var(--accent); padding: 1.4rem 1.6rem; margin: 2rem 0; overflow-x: auto; }
+  .md-rendered pre code { background: transparent; border: none; color: var(--paper); font-size: 0.8rem; padding: 0; }
+  .md-rendered blockquote { border-left: 3px solid var(--accent); padding: 1rem 0 1rem 1.6rem; margin: 2rem 0; background: var(--paper-dark); font-style: italic; }
+  .md-rendered ul, .md-rendered ol { margin: 1rem 0 1.6rem 1.8rem; }
+  .md-rendered li { margin-bottom: 0.5rem; line-height: 1.75; }
+  .md-rendered ul li::marker { color: var(--accent); }
+  .md-rendered table { width: 100%; border-collapse: collapse; margin: 2rem 0; font-size: 0.88em; }
+  .md-rendered th { font-family: 'IBM Plex Mono', monospace; font-size: 0.68em; letter-spacing: 0.1em; text-transform: uppercase; background: var(--ink); color: var(--paper); padding: 0.55rem 0.75rem; text-align: left; }
+  .md-rendered td { padding: 0.5rem 0.75rem; border: 1px solid var(--rule); }
+  .md-rendered tr:nth-child(even) td { background: var(--paper-dark); }
+  .md-rendered img { max-width: 100%; height: auto; display: block; margin: 1.5rem auto; border: 1px solid var(--rule); }
+
+  /* highlights */
+  mark.hl { border-radius: 2px; padding: 0 2px; cursor: pointer; }
+  mark.hl:hover::after { content: ' ✕'; font-size: 0.7em; opacity: 0.55; }
+  mark.hl-yellow { background: var(--hl-yellow); }
+  mark.hl-green  { background: var(--hl-green); }
+  mark.hl-blue   { background: var(--hl-blue); }
+  mark.hl-pink   { background: var(--hl-pink); }
+  .tts-reading   { background: #fff9c4 !important; border-radius: 2px; transition: background 0.2s; }
+
+  /* raw / split */
+  .md-raw {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; line-height: 1.8;
+    color: var(--ink); white-space: pre-wrap; word-break: break-word;
+    background: var(--paper-dark); padding: 2rem; border: 1px solid var(--rule); min-height: 200px;
+  }
+  .split-view { display: grid; grid-template-columns: 1fr 1fr; height: 100%; }
+  .split-pane { overflow-y: auto; }
+  .split-pane:first-child { border-right: 1px solid var(--rule); background: #1e1e1e; }
+  .split-pane .md-raw { background: #1e1e1e; color: #d4d0c8; border: none; height: 100%; }
+  .split-pane .content-area { padding: 2rem 1.5rem 4rem; }
+
+  /* summary */
+  .summary-panel { background: var(--paper-dark); border: 1px solid var(--rule); border-left: 3px solid var(--accent); margin: 1.5rem 0; padding: 1.1rem 1.4rem; }
+  .summary-panel-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.7rem; display: flex; justify-content: space-between; align-items: center; }
+  .summary-close { background: none; border: none; cursor: pointer; color: rgba(26,26,26,0.35); font-size: 0.9rem; transition: color 0.15s; }
+  .summary-close:hover { color: var(--accent); }
+  .summary-content { font-family: 'Crimson Pro', serif; font-size: 0.98rem; line-height: 1.7; color: var(--ink); }
+  .summary-loading { display: flex; align-items: center; gap: 0.6rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: rgba(26,26,26,0.45); }
+  .spinner { width: 13px; height: 13px; border: 2px solid var(--rule); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .content-area { animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+
+  /* ── TTS BAR ─────────────────────────────────────────── */
+  .tts-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--ink); border-top: 2px solid var(--accent);
+    padding: 0.55rem 1.4rem;
+    display: flex; align-items: center; gap: 0.9rem;
+    z-index: 400;
+    transform: translateY(100%); transition: transform 0.3s ease;
+  }
+  .tts-bar.visible { transform: translateY(0); }
+  .tts-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .tts-btn {
+    background: none; border: 1px solid rgba(200,191,173,0.28);
+    color: var(--paper); width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 0.95rem; transition: all 0.15s; flex-shrink: 0;
+  }
+  .tts-btn:hover { background: var(--accent); border-color: var(--accent); }
+  .tts-progress-wrap { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .tts-sentence-preview { font-family: 'Crimson Pro', serif; font-size: 0.8rem; color: rgba(245,240,232,0.55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; }
+  .tts-progress-track { height: 3px; background: rgba(200,191,173,0.18); cursor: pointer; }
+  .tts-progress-fill { height: 100%; background: var(--accent); transition: width 0.3s linear; pointer-events: none; }
+  .tts-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+  .tts-speed-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; color: rgba(200,191,173,0.45); text-transform: uppercase; white-space: nowrap; }
+  .tts-speed { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--paper); background: none; border: 1px solid rgba(200,191,173,0.28); padding: 3px 5px; cursor: pointer; transition: all 0.15s; width: 48px; text-align: center; }
   .tts-speed:hover { border-color: var(--accent); color: var(--accent); }
-  .tts-close {
-    background: none; border: none; color: rgba(200,191,173,0.4);
-    cursor: pointer; font-size: 1rem; padding: 4px; transition: color 0.15s;
-    flex-shrink: 0;
-  }
+  .tts-close { background: none; border: none; color: rgba(200,191,173,0.35); cursor: pointer; font-size: 0.95rem; padding: 4px; transition: color 0.15s; flex-shrink: 0; }
   .tts-close:hover { color: var(--accent); }
 
-  /* Sentence highlight while reading */
-  .tts-reading {
-    background: #fff9c4 !important;
-    border-radius: 2px;
-    transition: background 0.2s;
+  /* ── TOASTS ──────────────────────────────────────────── */
+  .pomo-toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--ink); color: var(--paper);
+    border-left: 3px solid var(--accent);
+    padding: 0.75rem 1.1rem;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; letter-spacing: 0.03em;
+    z-index: 500; animation: slideIn 0.3s ease, fadeOut 0.4s ease 3.6s forwards; max-width: 260px;
   }
+  .pomo-toast.break-toast { border-left-color: #4caf50; }
+  @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+  @keyframes fadeOut  { to { opacity:0; transform:translateY(5px); } }
 
+  /* ── PRINT ───────────────────────────────────────────── */
   @media print {
-    header, .sidebar, .toolbar, .bottom-nav, .tts-bar { display: none !important; }
-    .app-body { height: auto; display: block; }
+    header, .focus-bar, .sidebar, .toolbar, .tts-bar, .bottom-nav { display: none !important; }
+    body { overflow: visible; height: auto; }
+    .app-body { display: block; height: auto; overflow: visible; }
     .main { overflow: visible; height: auto; }
     .content-area { max-width: 100%; padding: 0; }
   }
 
-  /* ---- BOTTOM NAV (mobile only) ---- */
-  .bottom-nav {
-    display: none;
-  }
+  /* ── MOBILE ──────────────────────────────────────────── */
+  .bottom-nav { display: none; }
+  #fileInput { display: none; }
 
   @media (max-width: 768px) {
-    /* Header compacto */
-    header { padding: 0 1rem; height: 50px; }
-    .logo span { display: none; }
-    .logo { font-size: 1rem; }
-    header .btn:not(.btn-primary) { display: none; }
-    .btn { padding: 5px 10px; font-size: 0.65rem; }
+    :root { --header-h: 50px; --focusbar-h: 46px; }
 
-    /* Layout: columna en móvil */
+    header { padding: 0 0.8rem; }
+    .logo-text { display: none; }
+    header .btn:not(.btn-primary):not(.btn-icon) { display: none; }
+
+    .focus-bar { gap: 0.5rem; padding: 0 0.7rem; overflow-x: auto; }
+    .focus-bar-label { display: none; }
+    .pomo-mode-btn { font-size: 0.55rem; padding: 4px 6px; }
+    .pomo-clock { font-size: 1rem; }
+    .pomo-sessions-label { display: none; }
+
     .app-body {
-      flex-direction: column;
-      height: calc(100vh - 50px);
-      overflow: hidden;
+      /* En móvil el sidebar es un drawer superpuesto, no ocupa espacio */
     }
 
-    /* Sidebar: drawer desde abajo */
     .sidebar {
       position: fixed;
-      bottom: 56px; /* encima del bottom nav */
-      left: 0; right: 0;
-      width: 100% !important;
-      height: 75vh;
-      border-right: none;
-      border-top: 3px solid var(--accent);
+      top: calc(var(--header-h) + var(--focusbar-h));
+      left: 0; bottom: 56px;
+      width: 85vw !important; min-width: 0 !important;
+      transform: translateX(-100%);
+      transition: transform 0.28s ease;
       z-index: 200;
-      transform: translateY(100%);
-      transition: transform 0.3s ease;
-      overflow-y: auto;
+      border-right: 3px solid var(--accent);
     }
-    .sidebar.mobile-open {
-      transform: translateY(0);
-    }
-    .sidebar.collapsed {
-      width: 100% !important;
-      transform: translateY(100%);
-    }
+    .sidebar.mobile-open { transform: translateX(0); }
+    .sidebar.collapsed   { transform: translateX(-100%); }
 
-    /* Main ocupa todo */
-    .main {
-      flex: 1;
-      height: calc(100vh - 50px - 56px); /* header + bottom nav */
-      overflow-y: auto;
-      padding-bottom: 1rem;
-    }
+    .main { /* ocupa todo el ancho */ }
+    .content-area { padding: 2rem 1.2rem 6rem; }
+    .meta-bar { padding: 0.6rem 1.2rem; gap: 0.8rem; font-size: 0.58rem; }
 
-    /* Toolbar compacta: dos filas */
-    .toolbar {
-      padding: 0.35rem 0.8rem;
-      gap: 0.4rem;
-      flex-wrap: wrap;
-    }
-    .toolbar-left { gap: 0.4rem; }
-    .toolbar-right {
-      width: 100%;
-      gap: 0.4rem;
-      justify-content: space-between;
-    }
-    .file-title-display { max-width: 130px; font-size: 0.62rem; }
-    .font-size-control { padding: 2px 6px; gap: 4px; }
-    input[type="range"].font-slider { width: 60px; }
-    .font-size-value { min-width: 22px; font-size: 0.62rem; }
-    .btn-summary { padding: 4px 7px; font-size: 0.58rem; }
-    .view-btn { padding: 4px 7px; font-size: 0.58rem; }
-    .hl-swatch { width: 14px; height: 14px; }
+    .toolbar { padding: 0.3rem 0.7rem; }
+    .toolbar-right { width: 100%; justify-content: space-between; }
+    .file-title-display { max-width: 110px; font-size: 0.6rem; }
+    input[type="range"].font-slider { width: 55px; }
+    .btn-summary { padding: 3px 6px; font-size: 0.56rem; }
+    .view-btn { padding: 3px 6px; font-size: 0.56rem; }
+    .hl-swatch { width: 13px; height: 13px; }
 
-    /* Contenido con más margen inferior (bottom nav) */
-    .content-area { padding: 2rem 1.4rem 6rem; }
-    .meta-bar { padding: 0.6rem 1.4rem; gap: 1rem; font-size: 0.6rem; flex-wrap: wrap; }
+    .md-rendered h1 { font-size: 1.7rem; }
+    .md-rendered h2 { font-size: 1.25rem; }
 
-    /* Headings más pequeños */
-    .md-rendered h1 { font-size: 1.8rem; }
-    .md-rendered h2 { font-size: 1.3rem; }
-
-    /* Split: solo vista rendered en móvil */
     .split-view { grid-template-columns: 1fr; }
     .split-pane:first-child { display: none; }
-    .split-pane { height: calc(100vh - 50px - 56px - 80px); }
 
-    /* Pomodoro en sidebar: más compacto */
-    .pomodoro-ring { width: 90px; height: 90px; }
-    .pomodoro-ring svg { width: 90px; height: 90px; }
-    .pomo-clock { font-size: 1.2rem; }
+    .tts-bar { bottom: 56px; padding: 0.4rem 0.8rem; gap: 0.5rem; }
 
-    /* Toast posición ajustada */
-    .pomo-toast { bottom: 5rem; right: 1rem; left: 1rem; max-width: none; }
+    .pomo-toast { bottom: 4.5rem; right: 0.8rem; left: 0.8rem; max-width: none; }
 
-    /* Empty state */
-    .empty-state { min-height: 50vh; }
-    .empty-state-mark { font-size: 3.5rem; }
-
-    /* BOTTOM NAV */
     .bottom-nav {
-      display: flex;
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      height: 56px;
-      background: var(--ink);
-      border-top: 2px solid var(--accent);
-      z-index: 300;
+      display: flex; position: fixed;
+      bottom: 0; left: 0; right: 0; height: 56px;
+      background: var(--ink); border-top: 2px solid var(--accent); z-index: 300;
     }
     .bnav-btn {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      background: none;
-      border: none;
-      color: rgba(245,240,232,0.45);
-      cursor: pointer;
-      transition: color 0.15s;
-      padding: 0;
-      font-size: 1.2rem;
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2px; background: none; border: none; color: rgba(245,240,232,0.4);
+      cursor: pointer; transition: color 0.15s; padding: 0; font-size: 1.1rem;
       border-right: 1px solid rgba(200,191,173,0.1);
     }
     .bnav-btn:last-child { border-right: none; }
     .bnav-btn.active { color: var(--accent); }
-    .bnav-btn span {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.52rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-    .bnav-btn:active { background: rgba(255,255,255,0.05); }
+    .bnav-btn span { font-family: 'IBM Plex Mono', monospace; font-size: 0.5rem; letter-spacing: 0.05em; text-transform: uppercase; }
+    .bnav-btn:active { background: rgba(255,255,255,0.04); }
 
-    /* Overlay cuando sidebar está abierto */
     .sidebar-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 199;
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.48); z-index: 199;
     }
     .sidebar-overlay.visible { display: block; }
   }
@@ -910,20 +591,53 @@
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
   <div class="logo">
     <div class="logo-mark">MD</div>
-    Lector Markdown
+    <span class="logo-text">Lector Markdown</span>
   </div>
   <div class="header-actions">
     <button class="btn" id="pasteBtn">⌘ Pegar</button>
-    <button class="btn" id="ttsHeaderBtn" title="Escuchar texto" style="font-size:1rem;padding:6px 10px;">🔊</button>
-    <button class="btn" id="pomoHeaderBtn" title="Abrir Pomodoro" style="font-size:1rem;padding:6px 10px;">🍅</button>
+    <button class="btn-icon" id="ttsHeaderBtn" title="Escuchar texto">🔊</button>
     <button class="btn btn-primary" id="openBtn">Abrir archivo</button>
     <input type="file" id="fileInput" accept=".md,.markdown,.txt" multiple>
   </div>
 </header>
 
+<!-- FOCUS BAR (pomodoro) -->
+<div class="focus-bar" id="focusBar">
+  <span class="focus-bar-label">🍅 Pomodoro</span>
+  <div class="pomodoro-modes">
+    <button class="pomo-mode-btn active" data-mins="25" data-type="work">25 min</button>
+    <button class="pomo-mode-btn" data-mins="5"  data-type="short">5 min</button>
+    <button class="pomo-mode-btn" data-mins="15" data-type="long">15 min</button>
+  </div>
+  <div class="pomo-ring-wrap">
+    <svg viewBox="0 0 110 110">
+      <circle class="pomo-track"    cx="55" cy="55" r="48"/>
+      <circle class="pomo-progress" cx="55" cy="55" r="48" id="pomoProgress"
+              stroke-dasharray="301.6" stroke-dashoffset="0"/>
+    </svg>
+    <div class="pomo-ring-time"></div>
+  </div>
+  <span class="pomo-clock" id="pomoClock">25:00</span>
+  <span class="pomo-label" id="pomoLabel">Foco</span>
+  <div class="pomo-controls">
+    <button class="pomo-btn" id="pomoStart" title="Iniciar">▶</button>
+    <button class="pomo-btn" id="pomoPause" title="Pausar" style="display:none">⏸</button>
+    <button class="pomo-btn" id="pomoReset" title="Reiniciar">↺</button>
+  </div>
+  <div class="pomo-sessions">
+    <div class="pomo-dot" id="pd1"></div>
+    <div class="pomo-dot" id="pd2"></div>
+    <div class="pomo-dot" id="pd3"></div>
+    <div class="pomo-dot" id="pd4"></div>
+    <span class="pomo-sessions-label" id="pomoSessionsLabel">0 / 4</span>
+  </div>
+</div>
+
+<!-- APP BODY -->
 <div class="app-body">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
@@ -935,45 +649,10 @@
     </div>
     <div class="file-list" id="fileList"></div>
     <div class="sidebar-footer" id="sidebarFooter">Sin archivos</div>
-
-    <!-- NOTES PANEL -->
-    <div class="notes-panel" id="notesPanel" style="display:none;">
+    <div class="notes-panel" id="notesPanel" style="display:none">
       <div class="notes-panel-title">📝 Mis notas</div>
-      <textarea id="notesTextarea" placeholder="Escribe aquí tus notas, ideas o lo que quieras recordar de este documento..."></textarea>
-      <div class="notes-hint">Las notas se guardan automáticamente por archivo.</div>
-    </div>
-
-    <!-- POMODORO PANEL -->
-    <div class="pomodoro-panel" id="pomodoroPanel">
-      <div class="pomodoro-title">🍅 Pomodoro</div>
-      <div class="pomodoro-modes">
-        <button class="pomo-mode-btn active" data-mins="25" data-type="work">25 min</button>
-        <button class="pomo-mode-btn" data-mins="5" data-type="short">5 min</button>
-        <button class="pomo-mode-btn" data-mins="15" data-type="long">15 min</button>
-      </div>
-      <div class="pomodoro-ring">
-        <svg viewBox="0 0 110 110">
-          <circle class="pomo-track" cx="55" cy="55" r="48"/>
-          <circle class="pomo-progress" id="pomoProgress" cx="55" cy="55" r="48"
-            stroke-dasharray="301.6" stroke-dashoffset="0"/>
-        </svg>
-        <div class="pomodoro-time">
-          <span class="pomo-clock" id="pomoClock">25:00</span>
-          <span class="pomo-label" id="pomoLabel">Foco</span>
-        </div>
-      </div>
-      <div class="pomodoro-controls">
-        <button class="pomo-btn" id="pomoStart" title="Iniciar">▶</button>
-        <button class="pomo-btn" id="pomoPause" title="Pausar" style="display:none;">⏸</button>
-        <button class="pomo-btn" id="pomoReset" title="Reiniciar">↺</button>
-      </div>
-      <div class="pomo-sessions">
-        <div class="pomo-dot" id="pd1"></div>
-        <div class="pomo-dot" id="pd2"></div>
-        <div class="pomo-dot" id="pd3"></div>
-        <div class="pomo-dot" id="pd4"></div>
-        <span class="pomo-sessions-label" id="pomoSessionsLabel">0 / 4</span>
-      </div>
+      <textarea id="notesTextarea" placeholder="Escribe aquí tus notas…"></textarea>
+      <div class="notes-hint">Se guardan automáticamente por archivo.</div>
     </div>
   </aside>
 
@@ -982,19 +661,19 @@
       <div class="empty-state-mark">#</div>
       <h2>Ningún archivo abierto</h2>
       <p>Abre un archivo .md, arrastra uno al panel lateral, o pega tu texto Markdown directamente.</p>
-      <button class="btn btn-primary" id="emptyOpenBtn">Abrir archivo</button>
+      <button class="btn btn-primary" id="emptyOpenBtn" style="color:white;">Abrir archivo</button>
     </div>
   </main>
 </div>
 
-<!-- TTS PLAYER BAR -->
+<!-- TTS BAR -->
 <div class="tts-bar" id="ttsBar">
   <div class="tts-controls">
-    <button class="tts-btn" id="ttsPlay" title="Reproducir">▶</button>
-    <button class="tts-btn" id="ttsPause" title="Pausar" style="display:none">⏸</button>
-    <button class="tts-btn" id="ttsStop" title="Detener">⏹</button>
-    <button class="tts-btn" id="ttsPrev" title="Frase anterior">⏮</button>
-    <button class="tts-btn" id="ttsNext" title="Frase siguiente">⏭</button>
+    <button class="tts-btn" id="ttsPlay"  title="Reproducir">▶</button>
+    <button class="tts-btn" id="ttsPause" title="Pausar"     style="display:none">⏸</button>
+    <button class="tts-btn" id="ttsStop"  title="Detener">⏹</button>
+    <button class="tts-btn" id="ttsPrev"  title="Anterior">⏮</button>
+    <button class="tts-btn" id="ttsNext"  title="Siguiente">⏭</button>
   </div>
   <div class="tts-progress-wrap">
     <div class="tts-sentence-preview" id="ttsSentencePreview">—</div>
@@ -1009,37 +688,24 @@
   <button class="tts-close" id="ttsClose" title="Cerrar">✕</button>
 </div>
 
-<!-- SIDEBAR OVERLAY (mobile) -->
+<!-- MOBILE OVERLAY -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<!-- BOTTOM NAV (mobile) -->
+<!-- MOBILE BOTTOM NAV -->
 <nav class="bottom-nav" id="bottomNav">
-  <button class="bnav-btn active" id="bnav-read" data-panel="none">
-    📖<span>Leer</span>
-  </button>
-  <button class="bnav-btn" id="bnav-files" data-panel="files">
-    📂<span>Archivos</span>
-  </button>
-  <button class="bnav-btn" id="bnav-notes" data-panel="notes">
-    📝<span>Notas</span>
-  </button>
-  <button class="bnav-btn" id="bnav-pomo" data-panel="pomo">
-    🍅<span>Pomo</span>
-  </button>
-  <button class="bnav-btn" id="bnav-tts" data-panel="tts">
-    🔊<span>Escuchar</span>
-  </button>
-  <button class="bnav-btn" id="bnav-open" data-panel="open">
-    ➕<span>Abrir</span>
-  </button>
+  <button class="bnav-btn active" id="bnav-read"  data-panel="none">📖<span>Leer</span></button>
+  <button class="bnav-btn"        id="bnav-files" data-panel="files">📂<span>Archivos</span></button>
+  <button class="bnav-btn"        id="bnav-notes" data-panel="notes">📝<span>Notas</span></button>
+  <button class="bnav-btn"        id="bnav-tts"   data-panel="tts">🔊<span>Escuchar</span></button>
+  <button class="bnav-btn"        id="bnav-open"  data-panel="open">➕<span>Abrir</span></button>
 </nav>
 
 <!-- PASTE MODAL -->
-<div id="pasteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center;">
-  <div style="background:var(--paper);border:2px solid var(--ink);padding:2rem;width:90%;max-width:620px;max-height:80vh;display:flex;flex-direction:column;gap:1rem;">
-    <div style="font-family:'Playfair Display',serif;font-size:1.3rem;">Pegar Markdown</div>
-    <textarea id="pasteArea" style="flex:1;min-height:260px;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;padding:1rem;border:1px solid var(--rule);background:var(--paper-dark);resize:vertical;color:var(--ink);" placeholder="Pega tu Markdown aquí..."></textarea>
-    <div style="display:flex;gap:0.8rem;justify-content:flex-end;">
+<div id="pasteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center;">
+  <div style="background:var(--paper);border:2px solid var(--ink);padding:1.8rem;width:90%;max-width:580px;max-height:80vh;display:flex;flex-direction:column;gap:1rem;">
+    <div style="font-family:'Playfair Display',serif;font-size:1.25rem;">Pegar Markdown</div>
+    <textarea id="pasteArea" style="flex:1;min-height:240px;font-family:'IBM Plex Mono',monospace;font-size:0.78rem;padding:0.9rem;border:1px solid var(--rule);background:var(--paper-dark);resize:vertical;color:var(--ink);" placeholder="Pega tu Markdown aquí..."></textarea>
+    <div style="display:flex;gap:0.7rem;justify-content:flex-end;">
       <button class="btn" id="pasteCancelBtn" style="color:var(--ink);border-color:var(--rule);">Cancelar</button>
       <button class="btn btn-primary" id="pasteConfirmBtn">Cargar</button>
     </div>
@@ -1047,918 +713,363 @@
 </div>
 
 <script>
-// ================================================================
-// STATE
-// ================================================================
-let files = [];
-let activeId = null;
-let viewMode = 'rendered';
-let fontSize = 18;
-let hlColor = 'yellow';
-let notes = {};        // { fileId: string }
-let summaries = {};    // { fileId: string | null }
-let highlights = {};   // { fileId: [{id, color, text}] }
-let summaryVisible = {};
-
+// ── STATE ────────────────────────────────────────────────────
+let files = [], activeId = null, viewMode = 'rendered';
+let fontSize = 18, hlColor = 'yellow';
+let notes = {}, summaries = {}, highlights = {}, summaryVisible = {};
 const HL_COLORS = ['yellow','green','blue','pink'];
 
-// ================================================================
-// MARKDOWN PARSER
-// ================================================================
-function parseMarkdown(md) {
-  let html = md
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/```[\w]*\n?([\s\S]*?)```/g, (_,c) => `<pre><code>${c.trim()}</code></pre>`)
-    .replace(/^###### (.+)$/gm,'<h6>$1</h6>')
-    .replace(/^##### (.+)$/gm,'<h5>$1</h5>')
-    .replace(/^#### (.+)$/gm,'<h4>$1</h4>')
-    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
-    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
-    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
-    .replace(/^(---|\*\*\*|___)$/gm,'<hr>')
-    .replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>')
-    .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/___(.+?)___/g,'<strong><em>$1</em></strong>')
-    .replace(/__(.+?)__/g,'<strong>$1</strong>')
-    .replace(/_(.+?)_/g,'<em>$1</em>')
-    .replace(/~~(.+?)~~/g,'<del>$1</del>')
-    .replace(/`([^`]+)`/g,'<code>$1</code>')
-    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, url) => `<img alt="${esc(alt)}" src="${safeUrl(url)}" loading="lazy">`)
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => `<a href="${safeUrl(url)}" target="_blank" rel="noopener noreferrer">${label}</a>`)
-    .replace(/((?:^\|.+\|\n)+)/gm, block => {
-      const rows = block.trim().split('\n');
-      let out = '<table>';
-      rows.forEach((row,i) => {
-        if (/^\|[-:| ]+\|$/.test(row)) return;
-        const cells = row.split('|').filter((_,idx,arr)=>idx>0&&idx<arr.length-1);
-        const tag = i===0?'th':'td';
-        out += '<tr>'+cells.map(c=>`<${tag}>${c.trim()}</${tag}>`).join('')+'</tr>';
-      });
-      return out+'</table>';
-    })
-    .replace(/((?:^[ \t]*[-*+] .+\n?)+)/gm, block => {
-      const items = block.trim().split('\n').map(l=>l.replace(/^[ \t]*[-*+] /,'').trim());
-      return '<ul>'+items.map(i=>`<li>${i}</li>`).join('')+'</ul>';
-    })
-    .replace(/((?:^\d+\. .+\n?)+)/gm, block => {
-      const items = block.trim().split('\n').map(l=>l.replace(/^\d+\. /,'').trim());
-      return '<ol>'+items.map(i=>`<li>${i}</li>`).join('')+'</ol>';
-    })
-    .split('\n\n')
-    .map(para => {
-      para = para.trim();
-      if (!para) return '';
-      if (/^<(h[1-6]|ul|ol|pre|blockquote|table|hr)/.test(para)) return para;
-      return '<p>'+para.replace(/\n/g,'<br>')+'</p>';
-    })
-    .join('\n');
-  return html;
-}
-
-// ================================================================
-// UTILS
-// ================================================================
-function wordCount(t){ return t.trim().split(/\s+/).filter(Boolean).length; }
-function readTime(w){ return Math.ceil(w/220)+' min'; }
-function esc(s){ return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-function safeUrl(url) {
-  const value = String(url || '').trim();
-  try {
-    const parsed = new URL(value, window.location.href);
-    if (['http:', 'https:', 'mailto:'].includes(parsed.protocol)) return esc(value);
-    if (value.startsWith('#') || value.startsWith('./') || value.startsWith('../') || value.startsWith('/')) return esc(value);
-  } catch (_) {
-    if (value.startsWith('#') || value.startsWith('./') || value.startsWith('../') || value.startsWith('/')) return esc(value);
-  }
-  return '#';
-}
+// ── PERSIST ──────────────────────────────────────────────────
 function saveState() {
-  try {
-    localStorage.setItem('mdReaderStateV2', JSON.stringify({ files, activeId, viewMode, fontSize, hlColor, notes, highlights, summaries, summaryVisible }));
-  } catch (_) {}
+  try { localStorage.setItem('mdRdr3', JSON.stringify({files,activeId,viewMode,fontSize,hlColor,notes,highlights,summaries,summaryVisible})); } catch(_){}
 }
 function loadState() {
   try {
-    const saved = JSON.parse(localStorage.getItem('mdReaderStateV2') || 'null');
-    if (!saved) return;
-    files = Array.isArray(saved.files) ? saved.files : [];
-    activeId = saved.activeId || (files[0]?.id ?? null);
-    viewMode = saved.viewMode || viewMode;
-    fontSize = saved.fontSize || fontSize;
-    hlColor = saved.hlColor || hlColor;
-    notes = saved.notes || {};
-    highlights = saved.highlights || {};
-    summaries = saved.summaries || {};
-    summaryVisible = saved.summaryVisible || {};
-  } catch (_) {}
+    const s = JSON.parse(localStorage.getItem('mdRdr3')||'null'); if(!s) return;
+    files=s.files||[]; activeId=s.activeId||(files[0]?.id??null);
+    viewMode=s.viewMode||viewMode; fontSize=s.fontSize||fontSize; hlColor=s.hlColor||hlColor;
+    notes=s.notes||{}; highlights=s.highlights||{}; summaries=s.summaries||{}; summaryVisible=s.summaryVisible||{};
+  } catch(_){}
 }
 
-function applyFontSize() {
-  document.querySelectorAll('.md-rendered, .md-raw').forEach(el => {
-    el.style.fontSize = fontSize + 'px';
-  });
+// ── UTILS ────────────────────────────────────────────────────
+function wordCount(t){ return t.trim().split(/\s+/).filter(Boolean).length; }
+function readTime(w){ return Math.ceil(w/220)+' min'; }
+function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function safeUrl(u){
+  const v=String(u||'').trim();
+  try{ const p=new URL(v,location.href); if(['http:','https:','mailto:'].includes(p.protocol)) return esc(v); } catch(_){}
+  if(/^[#./]/.test(v)) return esc(v); return '#';
+}
+function applyFontSize(){ document.querySelectorAll('.md-rendered,.md-raw').forEach(el=>el.style.fontSize=fontSize+'px'); }
+
+// ── MARKDOWN ─────────────────────────────────────────────────
+function parseMarkdown(md){
+  return md
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/```[\w]*\n?([\s\S]*?)```/g,(_,c)=>`<pre><code>${c.trim()}</code></pre>`)
+    .replace(/^#{6} (.+)$/gm,'<h6>$1</h6>').replace(/^#{5} (.+)$/gm,'<h5>$1</h5>')
+    .replace(/^#{4} (.+)$/gm,'<h4>$1</h4>').replace(/^#{3} (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^#{2} (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/^(---|___|\*\*\*)$/gm,'<hr>')
+    .replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/___(.+?)___/g,'<strong><em>$1</em></strong>')
+    .replace(/__(.+?)__/g,'<strong>$1</strong>').replace(/_(.+?)_/g,'<em>$1</em>')
+    .replace(/~~(.+?)~~/g,'<del>$1</del>').replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g,(_,a,u)=>`<img alt="${esc(a)}" src="${safeUrl(u)}" loading="lazy">`)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,(_,l,u)=>`<a href="${safeUrl(u)}" target="_blank" rel="noopener">${l}</a>`)
+    .replace(/((?:^\|.+\|\n)+)/gm,block=>{
+      const rows=block.trim().split('\n'); let out='<table>';
+      rows.forEach((r,i)=>{ if(/^\|[-:| ]+\|$/.test(r)) return;
+        const cells=r.split('|').filter((_,j,a)=>j>0&&j<a.length-1);
+        const t=i===0?'th':'td'; out+='<tr>'+cells.map(c=>`<${t}>${c.trim()}</${t}>`).join('')+'</tr>'; });
+      return out+'</table>';
+    })
+    .replace(/((?:^[ \t]*[-*+] .+\n?)+)/gm,b=>'<ul>'+b.trim().split('\n').map(l=>`<li>${l.replace(/^[ \t]*[-*+] /,'').trim()}</li>`).join('')+'</ul>')
+    .replace(/((?:^\d+\. .+\n?)+)/gm,b=>'<ol>'+b.trim().split('\n').map(l=>`<li>${l.replace(/^\d+\. /,'').trim()}</li>`).join('')+'</ol>')
+    .split('\n\n').map(p=>{ p=p.trim(); if(!p) return '';
+      if(/^<(h[1-6]|ul|ol|pre|blockquote|table|hr)/.test(p)) return p;
+      return '<p>'+p.replace(/\n/g,'<br>')+'</p>'; }).join('\n');
 }
 
-// ================================================================
-// HIGHLIGHTS  (applied after render via DOM manipulation)
-// ================================================================
-function applyHighlightsToDOM() {
-  if (!activeId) return;
-  const hls = highlights[activeId] || [];
-  const container = document.querySelector('.md-rendered');
-  if (!container) return;
-
-  // Re-apply saved highlights by matching text
-  hls.forEach(h => {
-    applyHighlightToText(container, h.text, h.color, h.id);
-  });
+// ── HIGHLIGHTS ───────────────────────────────────────────────
+function applyHighlightsToDOM(){
+  if(!activeId) return;
+  const container=document.querySelector('.md-rendered'); if(!container) return;
+  (highlights[activeId]||[]).forEach(h=>applyHighlightToText(container,h.text,h.color,h.id));
 }
-
-function applyHighlightToText(container, searchText, color, id) {
-  // Walk text nodes and wrap matches
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+function applyHighlightToText(container,searchText,color,id){
+  const walker=document.createTreeWalker(container,NodeFilter.SHOW_TEXT);
   let node;
-  const toWrap = [];
-  while ((node = walker.nextNode())) {
-    const idx = node.textContent.indexOf(searchText);
-    if (idx !== -1) {
-      toWrap.push({node, idx});
-      break; // only first occurrence per saved highlight
-    }
-  }
-  toWrap.forEach(({node, idx}) => {
-    const before = node.textContent.slice(0, idx);
-    const match  = node.textContent.slice(idx, idx + searchText.length);
-    const after  = node.textContent.slice(idx + searchText.length);
-    const mark = document.createElement('mark');
-    mark.className = `hl hl-${color}`;
-    mark.dataset.hlId = id;
-    mark.textContent = match;
-    mark.title = 'Clic para eliminar subrayado';
-    mark.addEventListener('click', () => removeHighlight(id));
-    const frag = document.createDocumentFragment();
-    if (before) frag.appendChild(document.createTextNode(before));
+  while((node=walker.nextNode())){
+    const idx=node.textContent.indexOf(searchText);
+    if(idx===-1) continue;
+    const before=node.textContent.slice(0,idx), after=node.textContent.slice(idx+searchText.length);
+    const mark=document.createElement('mark');
+    mark.className=`hl hl-${color}`; mark.dataset.hlId=id;
+    mark.textContent=searchText; mark.title='Clic para eliminar';
+    mark.addEventListener('click',()=>removeHighlight(id));
+    const frag=document.createDocumentFragment();
+    if(before) frag.appendChild(document.createTextNode(before));
     frag.appendChild(mark);
-    if (after) frag.appendChild(document.createTextNode(after));
-    node.parentNode.replaceChild(frag, node);
-  });
-}
-
-function removeHighlight(id) {
-  if (!activeId) return;
-  highlights[activeId] = (highlights[activeId] || []).filter(h => h.id !== id);
-  saveState();
-  // Remove from DOM
-  const mark = document.querySelector(`mark[data-hl-id="${id}"]`);
-  if (mark) {
-    const text = document.createTextNode(mark.textContent);
-    mark.parentNode.replaceChild(text, mark);
+    if(after) frag.appendChild(document.createTextNode(after));
+    node.parentNode.replaceChild(frag,node); break;
   }
 }
-
-function handleTextSelection() {
-  const sel = window.getSelection();
-  if (!sel || sel.rangeCount === 0) return;
-  const text = sel.toString().trim();
-  if (!text || text.length < 2) return;
-
-  // Make sure selection is inside .md-rendered
-  const container = document.querySelector('.md-rendered');
-  if (!container) return;
-  const range = sel.getRangeAt(0);
-  if (!container.contains(range.commonAncestorContainer)) return;
-
-  const id = Date.now() + Math.random();
-  if (!highlights[activeId]) highlights[activeId] = [];
-  highlights[activeId].push({ id, color: hlColor, text });
-  saveState();
-
-  // Apply immediately
-  applyHighlightToText(container, text, hlColor, id);
+function removeHighlight(id){
+  if(!activeId) return;
+  highlights[activeId]=(highlights[activeId]||[]).filter(h=>h.id!==id); saveState();
+  const mark=document.querySelector(`mark[data-hl-id="${id}"]`);
+  if(mark){ mark.parentNode.replaceChild(document.createTextNode(mark.textContent),mark); }
+}
+function handleTextSelection(){
+  const sel=window.getSelection(); if(!sel||!sel.rangeCount) return;
+  const text=sel.toString().trim(); if(!text||text.length<2) return;
+  const container=document.querySelector('.md-rendered'); if(!container) return;
+  const range=sel.getRangeAt(0); if(!container.contains(range.commonAncestorContainer)) return;
+  const id=Date.now()+Math.random();
+  if(!highlights[activeId]) highlights[activeId]=[];
+  highlights[activeId].push({id,color:hlColor,text}); saveState();
+  applyHighlightToText(container,text,hlColor,id);
   sel.removeAllRanges();
 }
 
-// ================================================================
-// AI SUMMARY
-// ================================================================
-async function generateSummary(fileId, rawText) {
-  const summaryBtn = document.getElementById('summaryBtn');
-  if (summaryBtn) { summaryBtn.classList.add('loading'); summaryBtn.textContent = '⏳ Resumiendo...'; }
-
-  // Insert loading placeholder
-  insertSummaryPanel(fileId, null, true);
-
-  try {
-    // IMPORTANTE: en producción, llama a tu propio backend/proxy. No llames a Anthropic/OpenAI directamente desde el navegador.
-    const resp = await fetch('/api/summary', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: `Eres un asistente experto en síntesis de textos para personas con TDAH. 
-Analiza el siguiente texto en Markdown y genera un resumen estructurado en español que incluya:
-1. Una frase de 1-2 líneas que capture la idea central (empiézala con "💡 Idea central:")
-2. Entre 3 y 6 puntos clave en formato de lista (empiézalos con "🔑 Puntos clave:")
-3. Una palabra o frase muy breve que sirva de "gancho mental" para recordar el texto (empiézala con "🧠 Para recordar:")
-
-Sé conciso. Usa lenguaje claro y directo. No uses jerga técnica innecesaria.
-
-TEXTO:
-${rawText.slice(0, 6000)}`
-        }]
-      })
+// ── AI SUMMARY ───────────────────────────────────────────────
+async function generateSummary(fileId,rawText){
+  const btn=document.getElementById('summaryBtn');
+  if(btn){btn.classList.add('loading');btn.textContent='⏳ Resumiendo...';}
+  insertSummaryPanel(fileId,null,true);
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',
+        content:`Eres un asistente para personas con TDAH. Analiza este texto Markdown y genera un resumen en español con:\n1. "💡 Idea central:" (1-2 líneas)\n2. "🔑 Puntos clave:" (3-6 puntos)\n3. "🧠 Para recordar:" (frase o palabra gancho)\nSé conciso y claro.\n\nTEXTO:\n${rawText.slice(0,6000)}`}]})
     });
-
-    const data = await resp.json();
-    const text = data?.content?.find(b => b.type === 'text')?.text || 'No se pudo generar el resumen.';
-    summaries[fileId] = text;
-    saveState();
-    insertSummaryPanel(fileId, text, false);
-  } catch(e) {
-    summaries[fileId] = 'Error al conectar con la IA. La función de IA debe conectarse desde un backend/proxy seguro, no directamente desde el navegador.';
-    saveState();
-    insertSummaryPanel(fileId, summaries[fileId], false);
+    const data=await resp.json();
+    const text=data?.content?.find(b=>b.type==='text')?.text||'No se pudo generar el resumen.';
+    summaries[fileId]=text; saveState(); insertSummaryPanel(fileId,text,false);
+  } catch(e){
+    summaries[fileId]='Error al conectar con la IA.'; saveState(); insertSummaryPanel(fileId,summaries[fileId],false);
   }
-
-  if (summaryBtn) { summaryBtn.classList.remove('loading'); summaryBtn.textContent = '✦ Resumir con IA'; }
+  if(btn){btn.classList.remove('loading');btn.textContent='✦ Resumir con IA';}
+}
+function insertSummaryPanel(fileId,text,loading){
+  const ca=document.querySelector('.content-area'); if(!ca) return;
+  let panel=document.getElementById('summaryPanel');
+  if(!panel){ panel=document.createElement('div'); panel.id='summaryPanel'; panel.className='summary-panel'; ca.insertBefore(panel,ca.firstChild); }
+  if(loading){ panel.innerHTML=`<div class="summary-panel-title">Resumen IA</div><div class="summary-loading"><div class="spinner"></div>Analizando…</div>`; }
+  else{
+    panel.innerHTML=`<div class="summary-panel-title"><span>✦ Resumen IA</span><button class="summary-close" id="summaryCloseBtn">✕</button></div><div class="summary-content">${esc(text).replace(/\n/g,'<br>')}</div>`;
+    document.getElementById('summaryCloseBtn').addEventListener('click',()=>{ panel.remove(); summaryVisible[fileId]=false; saveState(); });
+  }
+  summaryVisible[fileId]=true; saveState();
 }
 
-function insertSummaryPanel(fileId, text, loading) {
-  const contentArea = document.querySelector('.content-area');
-  if (!contentArea) return;
-
-  let panel = document.getElementById('summaryPanel');
-  if (!panel) {
-    panel = document.createElement('div');
-    panel.id = 'summaryPanel';
-    panel.className = 'summary-panel';
-    contentArea.insertBefore(panel, contentArea.firstChild);
+// ── RENDER ───────────────────────────────────────────────────
+function render(){
+  const mainEl=document.getElementById('main');
+  const emptyState=document.getElementById('emptyState');
+  if(!activeId||!files.length){
+    mainEl.innerHTML=''; mainEl.appendChild(emptyState); emptyState.style.display='';
+    document.getElementById('notesPanel').style.display='none';
+    updateSidebar(); return;
   }
+  const file=files.find(f=>f.id===activeId); if(!file) return;
+  document.getElementById('notesPanel').style.display='flex';
+  const ta=document.getElementById('notesTextarea');
+  ta.value=notes[activeId]||'';
+  ta.oninput=()=>{notes[activeId]=ta.value; saveState();};
+  const words=wordCount(file.raw), chars=file.raw.length;
 
-  if (loading) {
-    panel.innerHTML = `
-      <div class="summary-panel-title">Resumen IA</div>
-      <div class="summary-loading"><div class="spinner"></div>Analizando el documento...</div>
-    `;
-  } else {
-    // Convert plain text response to simple HTML
-    const htmlContent = (text || '')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/\n- /g, '</p><ul><li>')
-      .replace(/\n/g, '<br>');
-
-    panel.innerHTML = `
-      <div class="summary-panel-title">
-        <span>✦ Resumen IA</span>
-        <button class="summary-close" id="summaryCloseBtn" title="Cerrar resumen">✕</button>
+  const toolbar=`<div class="toolbar">
+    <div class="toolbar-left">
+      <button class="toggle-sidebar" id="toggleSidebarBtn">☰</button>
+      <span class="file-title-display">${esc(file.name)}</span>
+      <button class="tts-launch-main" id="ttsLaunchBtn" title="Escuchar">🔊</button>
+    </div>
+    <div class="toolbar-right">
+      <div class="font-size-control">
+        <span class="font-size-label" style="font-size:.58rem">A</span>
+        <input type="range" class="font-slider" id="fontSlider" min="12" max="28" step="1" value="${fontSize}">
+        <span class="font-size-label" style="font-size:.88rem">A</span>
+        <span class="font-size-value" id="fontSizeDisplay">${fontSize}px</span>
       </div>
-      <div class="summary-content">${esc(text).replace(/\n/g,'<br>')}</div>
-    `;
-    document.getElementById('summaryCloseBtn').addEventListener('click', () => {
-      panel.remove();
-      summaryVisible[fileId] = false;
-      saveState();
-    });
-  }
-  summaryVisible[fileId] = true;
-  saveState();
-}
-
-// ================================================================
-// RENDER
-// ================================================================
-function render() {
-  const mainEl = document.getElementById('main');
-  const emptyState = document.getElementById('emptyState');
-
-  if (!activeId || files.length === 0) {
-    mainEl.innerHTML = '';
-    mainEl.appendChild(emptyState);
-    emptyState.style.display = '';
-    document.getElementById('notesPanel').style.display = 'none';
-    updateSidebar();
-    return;
-  }
-
-  const file = files.find(f => f.id === activeId);
-  if (!file) return;
-
-  document.getElementById('notesPanel').style.display = 'flex';
-  const notesTA = document.getElementById('notesTextarea');
-  notesTA.value = notes[activeId] || '';
-  notesTA.oninput = () => { notes[activeId] = notesTA.value; saveState(); };
-
-  const words = wordCount(file.raw);
-  const chars = file.raw.length;
-
-  const toolbar = `
-    <div class="toolbar">
-      <div class="toolbar-left">
-        <button class="toggle-sidebar btn" id="toggleSidebarBtn" title="Panel lateral" style="color:var(--ink);border-color:var(--rule);">☰</button>
-        <span class="file-title-display">${esc(file.name)}</span>
-        <button class="tts-launch-main" id="ttsLaunchBtn" title="Escuchar texto">🔊</button>
+      <div class="hl-picker">
+        <span class="hl-picker-label">🖍</span>
+        ${HL_COLORS.map(c=>`<div class="hl-swatch${hlColor===c?' active':''}" data-color="${c}" style="background:var(--hl-${c})"></div>`).join('')}
       </div>
-      <div class="toolbar-right">
-        <!-- Font size -->
-        <div class="font-size-control">
-          <span class="font-size-label" style="font-size:0.6rem;">A</span>
-          <input type="range" class="font-slider" id="fontSlider" min="12" max="28" step="1" value="${fontSize}">
-          <span class="font-size-label" style="font-size:0.9rem;">A</span>
-          <span class="font-size-value" id="fontSizeDisplay">${fontSize}px</span>
-        </div>
-        <!-- Highlight color picker -->
-        <div class="hl-picker">
-          <span class="hl-picker-label">🖍</span>
-          ${HL_COLORS.map(c=>`<div class="hl-swatch${hlColor===c?' active':''}" data-color="${c}" style="background:var(--hl-${c})" title="Subrayar en ${c}"></div>`).join('')}
-        </div>
-        <!-- Summary -->
-        <button class="btn-summary" id="summaryBtn">✦ Resumir con IA</button>
-        <!-- View mode -->
-        <div class="view-toggle">
-          <button class="view-btn ${viewMode==='rendered'?'active':''}" data-view="rendered">Vista</button>
-          <button class="view-btn ${viewMode==='raw'?'active':''}" data-view="raw">Raw</button>
-          <button class="view-btn ${viewMode==='split'?'active':''}" data-view="split">Split</button>
-        </div>
+      <button class="btn-summary" id="summaryBtn">✦ Resumir con IA</button>
+      <div class="view-toggle">
+        <button class="view-btn${viewMode==='rendered'?' active':''}" data-view="rendered">Vista</button>
+        <button class="view-btn${viewMode==='raw'?' active':''}" data-view="raw">Raw</button>
+        <button class="view-btn${viewMode==='split'?' active':''}" data-view="split">Split</button>
       </div>
     </div>
-  `;
+  </div>`;
 
-  const metaBar = `
-    <div class="meta-bar">
-      <span>${words} palabras</span>
-      <span>${chars} caracteres</span>
-      <span>≈ ${readTime(words)} lectura</span>
-      <span style="color:var(--accent);">Selecciona texto para subrayar</span>
-    </div>
-  `;
+  const metaBar=`<div class="meta-bar">
+    <span>${words} palabras</span><span>${chars} caracteres</span>
+    <span>≈ ${readTime(words)} lectura</span>
+    <span style="color:var(--accent)">Selecciona texto para subrayar</span>
+  </div>`;
 
-  if (viewMode === 'rendered') {
-    mainEl.innerHTML = toolbar + metaBar + `
-      <div class="content-area">
-        <div class="md-rendered">${parseMarkdown(file.raw)}</div>
-      </div>
-    `;
-  } else if (viewMode === 'raw') {
-    mainEl.innerHTML = toolbar + `
-      <div class="content-area">
-        <pre class="md-raw">${esc(file.raw)}</pre>
-      </div>
-    `;
+  if(viewMode==='rendered'){
+    mainEl.innerHTML=toolbar+metaBar+`<div class="content-area"><div class="md-rendered">${parseMarkdown(file.raw)}</div></div>`;
+  } else if(viewMode==='raw'){
+    mainEl.innerHTML=toolbar+`<div class="content-area"><pre class="md-raw">${esc(file.raw)}</pre></div>`;
   } else {
-    mainEl.innerHTML = toolbar + `
-      <div class="split-view">
-        <div class="split-pane"><pre class="md-raw">${esc(file.raw)}</pre></div>
-        <div class="split-pane"><div class="content-area"><div class="md-rendered">${parseMarkdown(file.raw)}</div></div></div>
-      </div>
-    `;
+    mainEl.innerHTML=toolbar+`<div class="split-view"><div class="split-pane"><pre class="md-raw">${esc(file.raw)}</pre></div><div class="split-pane"><div class="content-area"><div class="md-rendered">${parseMarkdown(file.raw)}</div></div></div></div>`;
   }
 
-  // --- Toolbar events ---
-  document.getElementById('toggleSidebarBtn').addEventListener('click', () => {
-    if (isMobile()) {
-      const sidebar = document.getElementById('sidebar');
-      if (sidebar.classList.contains('mobile-open')) {
-        closeMobileSidebar();
-      } else {
-        activeBnavPanel = 'files';
-        document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('bnav-files').classList.add('active');
-        openMobileSidebar('fileList');
-      }
-    } else {
-      document.getElementById('sidebar').classList.toggle('collapsed');
-    }
+  // toolbar events
+  document.getElementById('toggleSidebarBtn').addEventListener('click',()=>{
+    if(isMobile()){
+      const sb=document.getElementById('sidebar');
+      if(sb.classList.contains('mobile-open')) closeMobileSidebar();
+      else { activeBnavPanel='files'; document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active')); document.getElementById('bnav-files').classList.add('active'); openMobileSidebar(); }
+    } else { document.getElementById('sidebar').classList.toggle('collapsed'); }
   });
+  document.querySelectorAll('.view-btn').forEach(b=>b.addEventListener('click',()=>{viewMode=b.dataset.view;saveState();render();}));
+  const slider=document.getElementById('fontSlider'), disp=document.getElementById('fontSizeDisplay');
+  if(slider) slider.addEventListener('input',()=>{fontSize=parseInt(slider.value);disp.textContent=fontSize+'px';applyFontSize();saveState();});
+  document.querySelectorAll('.hl-swatch').forEach(sw=>sw.addEventListener('click',()=>{hlColor=sw.dataset.color;saveState();document.querySelectorAll('.hl-swatch').forEach(s=>s.classList.remove('active'));sw.classList.add('active');}));
+  if(viewMode==='rendered') document.querySelector('.md-rendered').addEventListener('mouseup',handleTextSelection);
+  const sb2=document.getElementById('summaryBtn');
+  if(sb2){ sb2.addEventListener('click',()=>{if(!sb2.classList.contains('loading'))generateSummary(activeId,file.raw);});
+    if(summaryVisible[activeId]&&summaries[activeId]) insertSummaryPanel(activeId,summaries[activeId],false); }
+  document.getElementById('ttsLaunchBtn')?.addEventListener('click',ttsLaunch);
 
-  document.querySelectorAll('.view-btn').forEach(btn => {
-    btn.addEventListener('click', () => { viewMode = btn.dataset.view; saveState(); render(); });
-  });
-
-  // Font size
-  const slider = document.getElementById('fontSlider');
-  const display = document.getElementById('fontSizeDisplay');
-  if (slider) {
-    slider.addEventListener('input', () => {
-      fontSize = parseInt(slider.value);
-      display.textContent = fontSize + 'px';
-      applyFontSize();
-      saveState();
-    });
-  }
-
-  // Highlight swatches
-  document.querySelectorAll('.hl-swatch').forEach(sw => {
-    sw.addEventListener('click', () => {
-      hlColor = sw.dataset.color;
-      saveState();
-      document.querySelectorAll('.hl-swatch').forEach(s => s.classList.remove('active'));
-      sw.classList.add('active');
-    });
-  });
-
-  // Text selection -> highlight
-  if (viewMode === 'rendered') {
-    document.querySelector('.md-rendered').addEventListener('mouseup', handleTextSelection);
-  }
-
-  // Summary button
-  const summaryBtn = document.getElementById('summaryBtn');
-  if (summaryBtn) {
-    summaryBtn.addEventListener('click', () => {
-      if (summaryBtn.classList.contains('loading')) return;
-      generateSummary(activeId, file.raw);
-    });
-    // If summary already generated and visible, restore it
-    if (summaryVisible[activeId] && summaries[activeId]) {
-      insertSummaryPanel(activeId, summaries[activeId], false);
-    }
-  }
-
-  // TTS launch button
-  const ttsLaunchBtn = document.getElementById('ttsLaunchBtn');
-  if (ttsLaunchBtn) {
-    ttsLaunchBtn.addEventListener('click', ttsLaunch);
-  }
   applyFontSize();
-  if (viewMode === 'rendered') applyHighlightsToDOM();
-
+  if(viewMode==='rendered') applyHighlightsToDOM();
   updateSidebar();
 }
 
-// ================================================================
-// SIDEBAR
-// ================================================================
-function updateSidebar() {
-  const list = document.getElementById('fileList');
-  const footer = document.getElementById('sidebarFooter');
-
-  list.innerHTML = files.map(f => `
-    <div class="file-item ${f.id===activeId?'active':''}" data-id="${f.id}">
-      <span class="file-icon">▸</span>
-      <span class="file-name" title="${esc(f.name)}">${esc(f.name)}</span>
-      <button class="file-remove" data-id="${f.id}" title="Eliminar">✕</button>
-    </div>
-  `).join('');
-
-  footer.textContent = files.length ? `${files.length} archivo${files.length!==1?'s':''}` : 'Sin archivos';
-
-  list.querySelectorAll('.file-item').forEach(el => {
-    el.addEventListener('click', e => {
-      if (e.target.classList.contains('file-remove')) return;
-      activeId = el.dataset.id;
-      saveState();
-      render();
-    });
-  });
-  list.querySelectorAll('.file-remove').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.dataset.id;
-      files = files.filter(f => f.id !== id);
-      if (activeId === id) activeId = files.length ? files[0].id : null;
-      saveState();
-      render();
-    });
-  });
+// ── SIDEBAR ──────────────────────────────────────────────────
+function updateSidebar(){
+  const list=document.getElementById('fileList'), footer=document.getElementById('sidebarFooter');
+  list.innerHTML=files.map(f=>`<div class="file-item${f.id===activeId?' active':''}" data-id="${f.id}"><span class="file-icon">▸</span><span class="file-name" title="${esc(f.name)}">${esc(f.name)}</span><button class="file-remove" data-id="${f.id}">✕</button></div>`).join('');
+  footer.textContent=files.length?`${files.length} archivo${files.length!==1?'s':''}`:'Sin archivos';
+  list.querySelectorAll('.file-item').forEach(el=>el.addEventListener('click',e=>{if(e.target.classList.contains('file-remove'))return;activeId=el.dataset.id;saveState();render();}));
+  list.querySelectorAll('.file-remove').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.id;files=files.filter(f=>f.id!==id);if(activeId===id)activeId=files.length?files[0].id:null;saveState();render();}));
 }
+function addFile(name,raw){ const id=Date.now()+Math.random(); files.push({name,raw,id}); activeId=id; saveState(); render(); }
 
-function addFile(name, raw) {
-  const id = Date.now() + Math.random();
-  files.push({ name, raw, id });
-  activeId = id;
-  saveState();
-  render();
+// ── FILES ────────────────────────────────────────────────────
+function handleFiles(fl){ Array.from(fl).forEach(f=>{const r=new FileReader();r.onload=e=>addFile(f.name,e.target.result);r.readAsText(f,'UTF-8');}); }
+document.getElementById('fileInput').addEventListener('change',e=>{handleFiles(e.target.files);e.target.value='';});
+document.getElementById('openBtn').addEventListener('click',()=>document.getElementById('fileInput').click());
+document.getElementById('main').addEventListener('click',e=>{if(e.target.id==='emptyOpenBtn')document.getElementById('fileInput').click();});
+const dz=document.getElementById('dropZone');
+dz.addEventListener('click',()=>document.getElementById('fileInput').click());
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');handleFiles(e.dataTransfer.files);});
+document.addEventListener('dragover',e=>e.preventDefault());
+document.addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer.files.length)handleFiles(e.dataTransfer.files);});
+
+// ── PASTE ────────────────────────────────────────────────────
+const pm=document.getElementById('pasteModal');
+document.getElementById('pasteBtn').addEventListener('click',()=>{pm.style.display='flex';document.getElementById('pasteArea').focus();});
+document.getElementById('pasteCancelBtn').addEventListener('click',()=>{pm.style.display='none';document.getElementById('pasteArea').value='';});
+document.getElementById('pasteConfirmBtn').addEventListener('click',()=>{const t=document.getElementById('pasteArea').value.trim();if(t){addFile('Sin título.md',t);pm.style.display='none';document.getElementById('pasteArea').value='';}});
+pm.addEventListener('click',e=>{if(e.target===pm){pm.style.display='none';document.getElementById('pasteArea').value='';}});
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='o'){e.preventDefault();document.getElementById('fileInput').click();}if(e.key==='Escape'&&pm.style.display==='flex')pm.style.display='none';});
+
+// ── POMODORO ─────────────────────────────────────────────────
+const POMO_C=301.6; let pomoTotal=25*60,pomoLeft=25*60,pomoRunning=false,pomoInterval=null,pomoSessions=0,pomoType='work';
+function pomoFmt(s){return`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
+function pomoUpdateUI(){
+  document.getElementById('pomoClock').textContent=pomoFmt(pomoLeft);
+  const p=document.getElementById('pomoProgress');
+  p.style.strokeDashoffset=POMO_C*(1-pomoLeft/pomoTotal);
+  p.className=`pomo-progress${pomoType!=='work'?' break':''}`;
+  document.getElementById('pomoLabel').textContent=pomoType==='work'?'Foco':pomoType==='short'?'Descanso corto':'Descanso largo';
+  for(let i=1;i<=4;i++) document.getElementById(`pd${i}`).className=`pomo-dot${i<=pomoSessions?' done':''}`;
+  document.getElementById('pomoSessionsLabel').textContent=`${pomoSessions} / 4`;
 }
-
-// ================================================================
-// FILE INPUT / DRAG DROP
-// ================================================================
-function handleFiles(fileList) {
-  Array.from(fileList).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => addFile(file.name, e.target.result);
-    reader.readAsText(file, 'UTF-8');
-  });
+function pomoToast(msg,isBreak){
+  document.querySelectorAll('.pomo-toast').forEach(t=>t.remove());
+  const t=document.createElement('div'); t.className=`pomo-toast${isBreak?' break-toast':''}`; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),4000);
 }
-
-document.getElementById('fileInput').addEventListener('change', e => { handleFiles(e.target.files); e.target.value=''; });
-document.getElementById('openBtn').addEventListener('click', () => document.getElementById('fileInput').click());
-document.getElementById('main').addEventListener('click', e => { if (e.target.id==='emptyOpenBtn') document.getElementById('fileInput').click(); });
-
-const dropZone = document.getElementById('dropZone');
-dropZone.addEventListener('click', () => document.getElementById('fileInput').click());
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
-document.addEventListener('dragover', e => e.preventDefault());
-document.addEventListener('drop', e => { e.preventDefault(); if(e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); });
-
-// ================================================================
-// PASTE MODAL
-// ================================================================
-const pasteModal = document.getElementById('pasteModal');
-document.getElementById('pasteBtn').addEventListener('click', () => { pasteModal.style.display='flex'; document.getElementById('pasteArea').focus(); });
-document.getElementById('pasteCancelBtn').addEventListener('click', () => { pasteModal.style.display='none'; document.getElementById('pasteArea').value=''; });
-document.getElementById('pasteConfirmBtn').addEventListener('click', () => {
-  const text = document.getElementById('pasteArea').value.trim();
-  if (text) { addFile('Sin título.md', text); pasteModal.style.display='none'; document.getElementById('pasteArea').value=''; }
-});
-pasteModal.addEventListener('click', e => { if(e.target===pasteModal){ pasteModal.style.display='none'; document.getElementById('pasteArea').value=''; } });
-
-// ================================================================
-// KEYBOARD
-// ================================================================
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey||e.metaKey) && e.key==='o') { e.preventDefault(); document.getElementById('fileInput').click(); }
-  if (e.key==='Escape' && pasteModal.style.display==='flex') { pasteModal.style.display='none'; }
-});
-
-// ================================================================
-// POMODORO
-// ================================================================
-const POMO_CIRCUMFERENCE = 301.6; // 2 * PI * 48
-let pomoTotal    = 25 * 60;
-let pomoLeft     = pomoTotal;
-let pomoRunning  = false;
-let pomoInterval = null;
-let pomoSessions = 0;
-let pomoType     = 'work'; // work | short | long
-
-function pomoFormat(s) {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
-
-function pomoUpdateUI() {
-  document.getElementById('pomoClock').textContent = pomoFormat(pomoLeft);
-  const progress = document.getElementById('pomoProgress');
-  const ratio = pomoLeft / pomoTotal;
-  progress.style.strokeDashoffset = POMO_CIRCUMFERENCE * (1 - ratio);
-  progress.className = `pomo-progress${pomoType !== 'work' ? ' break' : ''}`;
-  document.getElementById('pomoLabel').textContent =
-    pomoType === 'work' ? 'Foco' : pomoType === 'short' ? 'Descanso corto' : 'Descanso largo';
-  // Dots
-  for (let i = 1; i <= 4; i++) {
-    document.getElementById(`pd${i}`).className = `pomo-dot${i <= pomoSessions ? ' done' : ''}`;
+function pomoTick(){
+  if(pomoLeft<=0){
+    clearInterval(pomoInterval); pomoRunning=false;
+    document.getElementById('pomoStart').style.display=''; document.getElementById('pomoPause').style.display='none';
+    if(pomoType==='work'){pomoSessions=Math.min(pomoSessions+1,4);if(pomoSessions>=4){pomoToast('🎉 ¡4 pomodoros! Descansa largo.',true);pomoSessions=0;}else pomoToast('✅ ¡Sesión completada! Descansa.',true);}
+    else pomoToast('🍅 ¡Descanso terminado! Al trabajo.',false);
+    if(Notification.permission==='granted') new Notification('Pomodoro',{body:pomoType==='work'?'¡Descansa!':'¡Al trabajo!'});
+    pomoUpdateUI(); return;
   }
-  document.getElementById('pomoSessionsLabel').textContent = `${pomoSessions} / 4`;
+  pomoLeft--; pomoUpdateUI();
 }
-
-function pomoShowToast(msg, isBreak) {
-  document.querySelectorAll('.pomo-toast').forEach(t => t.remove());
-  const t = document.createElement('div');
-  t.className = `pomo-toast${isBreak ? ' break-toast' : ''}`;
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 4000);
-}
-
-function pomoTick() {
-  if (pomoLeft <= 0) {
-    clearInterval(pomoInterval);
-    pomoRunning = false;
-    document.getElementById('pomoStart').style.display = '';
-    document.getElementById('pomoPause').style.display = 'none';
-
-    if (pomoType === 'work') {
-      pomoSessions = Math.min(pomoSessions + 1, 4);
-      if (pomoSessions >= 4) {
-        pomoShowToast('🎉 ¡4 pomodoros completados! Tómate un descanso largo.', true);
-        pomoSessions = 0;
-      } else {
-        pomoShowToast('✅ ¡Sesión completada! Descansa un poco.', true);
-      }
-    } else {
-      pomoShowToast('🍅 ¡Descanso terminado! Vuelve al trabajo.', false);
-    }
-    // Try notification
-    if (Notification.permission === 'granted') {
-      new Notification('Lector Markdown — Pomodoro', {
-        body: pomoType === 'work' ? '¡Sesión completada! Hora de descansar.' : '¡Descanso terminado!',
-        icon: ''
-      });
-    }
-    pomoUpdateUI();
-    return;
-  }
-  pomoLeft--;
-  pomoUpdateUI();
-}
-
-function pomoStart() {
-  if (pomoRunning) return;
-  pomoRunning = true;
-  document.getElementById('pomoStart').style.display = 'none';
-  document.getElementById('pomoPause').style.display = '';
-  // Request notification permission
-  if (Notification.permission === 'default') Notification.requestPermission();
-  pomoInterval = setInterval(pomoTick, 1000);
-}
-
-function pomoPause() {
-  clearInterval(pomoInterval);
-  pomoRunning = false;
-  document.getElementById('pomoStart').style.display = '';
-  document.getElementById('pomoPause').style.display = 'none';
-}
-
-function pomoReset() {
-  pomoPause();
-  pomoLeft = pomoTotal;
-  pomoUpdateUI();
-}
-
-function pomoSetMode(mins, type) {
-  pomoPause();
-  pomoType  = type;
-  pomoTotal = mins * 60;
-  pomoLeft  = pomoTotal;
-  document.querySelectorAll('.pomo-mode-btn').forEach(b => {
-    b.classList.toggle('active', parseInt(b.dataset.mins) === mins);
-  });
-  pomoUpdateUI();
-}
-
-// Bind pomodoro events (run once on page load)
-document.getElementById('pomoStart').addEventListener('click', pomoStart);
-document.getElementById('pomoPause').addEventListener('click', pomoPause);
-document.getElementById('pomoReset').addEventListener('click', pomoReset);
-document.querySelectorAll('.pomo-mode-btn').forEach(btn => {
-  btn.addEventListener('click', () => pomoSetMode(parseInt(btn.dataset.mins), btn.dataset.type));
-});
+function pomoStart(){if(pomoRunning)return;pomoRunning=true;document.getElementById('pomoStart').style.display='none';document.getElementById('pomoPause').style.display='';if(Notification.permission==='default')Notification.requestPermission();pomoInterval=setInterval(pomoTick,1000);}
+function pomoPause(){clearInterval(pomoInterval);pomoRunning=false;document.getElementById('pomoStart').style.display='';document.getElementById('pomoPause').style.display='none';}
+function pomoReset(){pomoPause();pomoLeft=pomoTotal;pomoUpdateUI();}
+function pomoSetMode(mins,type){pomoPause();pomoType=type;pomoTotal=mins*60;pomoLeft=pomoTotal;document.querySelectorAll('.pomo-mode-btn').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.mins)===mins));pomoUpdateUI();}
+document.getElementById('pomoStart').addEventListener('click',pomoStart);
+document.getElementById('pomoPause').addEventListener('click',pomoPause);
+document.getElementById('pomoReset').addEventListener('click',pomoReset);
+document.querySelectorAll('.pomo-mode-btn').forEach(b=>b.addEventListener('click',()=>pomoSetMode(parseInt(b.dataset.mins),b.dataset.type)));
 pomoUpdateUI();
 
-// ================================================================
-// TEXT TO SPEECH (TTS)
-// ================================================================
-let ttsSentences  = [];
-let ttsIndex      = 0;
-let ttsUtterance  = null;
-let ttsPlaying    = false;
-const TTS_SPEEDS  = [0.75, 1, 1.25, 1.5, 1.75, 2];
-let ttsSpeedIdx   = 1; // default 1×
-
-function ttsExtractText(raw) {
-  // Strip markdown syntax and return clean plain text
-  return raw
-    .replace(/```[\s\S]*?```/g, '')
-    .replace(/`[^`]+`/g, '')
-    .replace(/!\[.*?\]\(.*?\)/g, '')
-    .replace(/\[([^\]]+)\]\(.*?\)/g, '$1')
-    .replace(/^#{1,6}\s+/gm, '')
-    .replace(/\*\*\*(.+?)\*\*\*/g, '$1')
-    .replace(/\*\*(.+?)\*\*/g, '$1')
-    .replace(/\*(.+?)\*/g, '$1')
-    .replace(/___(.+?)___/g, '$1')
-    .replace(/__(.+?)__/g, '$1')
-    .replace(/_(.+?)_/g, '$1')
-    .replace(/~~(.+?)~~/g, '$1')
-    .replace(/^[-*+] /gm, '')
-    .replace(/^\d+\. /gm, '')
-    .replace(/^>\s/gm, '')
-    .replace(/^---+$/gm, '')
-    .replace(/\|[^|\n]+/g, ' ')
-    .replace(/\n{2,}/g, '\n')
-    .trim();
+// ── TTS ──────────────────────────────────────────────────────
+let ttsSentences=[],ttsIndex=0,ttsUtterance=null,ttsPlaying=false;
+const TTS_SPEEDS=[0.75,1,1.25,1.5,1.75,2]; let ttsSpeedIdx=1;
+function ttsExtract(raw){return raw.replace(/```[\s\S]*?```/g,'').replace(/`[^`]+`/g,'').replace(/!\[.*?\]\(.*?\)/g,'').replace(/\[([^\]]+)\]\(.*?\)/g,'$1').replace(/^#{1,6}\s+/gm,'').replace(/\*{1,3}(.+?)\*{1,3}/g,'$1').replace(/_{1,3}(.+?)_{1,3}/g,'$1').replace(/~~(.+?)~~/g,'$1').replace(/^[-*+\d.] /gm,'').replace(/^[>|].*/gm,'').replace(/^---+$/gm,'').replace(/\n{2,}/g,'\n').trim();}
+function ttsSplit(t){return t.split(/(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÜÑ"«\d])/).map(s=>s.trim()).filter(s=>s.length>2);}
+function ttsUpdateUI(){
+  const prev=document.getElementById('ttsSentencePreview'), fill=document.getElementById('ttsProgressFill');
+  const play=document.getElementById('ttsPlay'), pause=document.getElementById('ttsPause'), spd=document.getElementById('ttsSpeedBtn');
+  if(!prev) return;
+  prev.textContent=ttsSentences[ttsIndex]||'—';
+  fill.style.width=(ttsSentences.length>1?ttsIndex/(ttsSentences.length-1)*100:0)+'%';
+  if(spd) spd.textContent=TTS_SPEEDS[ttsSpeedIdx]+'×';
+  play.style.display=ttsPlaying?'none':''; pause.style.display=ttsPlaying?'':'none';
 }
-
-function ttsSplit(text) {
-  // Split into sentences on . ! ? with some heuristics
-  return text
-    .split(/(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÜÑ"«\d])/)
-    .map(s => s.trim())
-    .filter(s => s.length > 2);
-}
-
-function ttsUpdateUI() {
-  const preview = document.getElementById('ttsSentencePreview');
-  const fill    = document.getElementById('ttsProgressFill');
-  const play    = document.getElementById('ttsPlay');
-  const pause   = document.getElementById('ttsPause');
-  const speedBtn= document.getElementById('ttsSpeedBtn');
-  if (!preview) return;
-  preview.textContent = ttsSentences[ttsIndex] || '—';
-  const pct = ttsSentences.length > 1 ? (ttsIndex / (ttsSentences.length - 1)) * 100 : 0;
-  fill.style.width = pct + '%';
-  if (speedBtn) speedBtn.textContent = TTS_SPEEDS[ttsSpeedIdx] + '×';
-  play.style.display  = ttsPlaying ? 'none' : '';
-  pause.style.display = ttsPlaying ? ''     : 'none';
-}
-
-function ttsHighlightSentence(idx) {
-  // Remove previous highlight
-  document.querySelectorAll('.tts-reading').forEach(el => el.classList.remove('tts-reading'));
-  if (!ttsSentences[idx]) return;
-  const target = ttsSentences[idx].slice(0, 40); // first 40 chars for matching
-  const container = document.querySelector('.md-rendered');
-  if (!container) return;
-  // Walk text nodes to find and wrap
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+function ttsHighlight(idx){
+  document.querySelectorAll('.tts-reading').forEach(e=>e.classList.remove('tts-reading'));
+  if(!ttsSentences[idx]) return;
+  const target=ttsSentences[idx].slice(0,20);
+  const container=document.querySelector('.md-rendered'); if(!container) return;
+  const walker=document.createTreeWalker(container,NodeFilter.SHOW_TEXT);
   let node;
-  while ((node = walker.nextNode())) {
-    if (node.textContent.includes(target.slice(0, 20))) {
-      const parent = node.parentElement;
-      if (parent && !parent.classList.contains('tts-reading')) {
-        parent.classList.add('tts-reading');
-        parent.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        break;
-      }
-    }
-  }
+  while((node=walker.nextNode())){if(node.textContent.includes(target)){const p=node.parentElement;if(p&&!p.classList.contains('tts-reading')){p.classList.add('tts-reading');p.scrollIntoView({behavior:'smooth',block:'center'});break;}}}
 }
-
-function ttsSpeak(idx) {
+function ttsSpeak(idx){
   window.speechSynthesis.cancel();
-  if (idx >= ttsSentences.length) {
-    ttsPlaying = false;
-    ttsIndex = 0;
-    document.querySelectorAll('.tts-reading').forEach(el => el.classList.remove('tts-reading'));
-    ttsUpdateUI();
-    return;
-  }
-  ttsIndex = idx;
-  ttsHighlightSentence(idx);
-  ttsUpdateUI();
-
-  const utt = new SpeechSynthesisUtterance(ttsSentences[idx]);
-  utt.lang  = 'es-ES';
-  utt.rate  = TTS_SPEEDS[ttsSpeedIdx];
-
-  // Try to pick a Spanish voice
-  const voices = window.speechSynthesis.getVoices();
-  const esVoice = voices.find(v => v.lang.startsWith('es')) || null;
-  if (esVoice) utt.voice = esVoice;
-
-  utt.onend = () => {
-    if (ttsPlaying) ttsSpeak(idx + 1);
-  };
-  utt.onerror = () => {
-    if (ttsPlaying) ttsSpeak(idx + 1);
-  };
-
-  ttsUtterance = utt;
-  window.speechSynthesis.speak(utt);
+  if(idx>=ttsSentences.length){ttsPlaying=false;ttsIndex=0;document.querySelectorAll('.tts-reading').forEach(e=>e.classList.remove('tts-reading'));ttsUpdateUI();return;}
+  ttsIndex=idx; ttsHighlight(idx); ttsUpdateUI();
+  const utt=new SpeechSynthesisUtterance(ttsSentences[idx]);
+  utt.lang='es-ES'; utt.rate=TTS_SPEEDS[ttsSpeedIdx];
+  const v=window.speechSynthesis.getVoices().find(v=>v.lang.startsWith('es')); if(v) utt.voice=v;
+  utt.onend=()=>{if(ttsPlaying)ttsSpeak(idx+1);}; utt.onerror=()=>{if(ttsPlaying)ttsSpeak(idx+1);};
+  ttsUtterance=utt; window.speechSynthesis.speak(utt);
 }
-
-function ttsLaunch() {
-  if (!activeId) return;
-  const file = files.find(f => f.id === activeId);
-  if (!file) return;
-  const plain = ttsExtractText(file.raw);
-  ttsSentences = ttsSplit(plain);
-  ttsIndex  = 0;
-  ttsPlaying = true;
-  document.getElementById('ttsBar').classList.add('visible');
-  ttsSpeak(0);
+function ttsLaunch(){
+  if(!activeId) return;
+  const file=files.find(f=>f.id===activeId); if(!file) return;
+  ttsSentences=ttsSplit(ttsExtract(file.raw)); ttsIndex=0; ttsPlaying=true;
+  document.getElementById('ttsBar').classList.add('visible'); ttsSpeak(0);
 }
+function ttsPlay(){if(!ttsSentences.length){ttsLaunch();return;}ttsPlaying=true;ttsSpeak(ttsIndex);}
+function ttsPauseF(){ttsPlaying=false;window.speechSynthesis.cancel();ttsUpdateUI();}
+function ttsStopF(){ttsPlaying=false;ttsIndex=0;window.speechSynthesis.cancel();document.querySelectorAll('.tts-reading').forEach(e=>e.classList.remove('tts-reading'));document.getElementById('ttsBar').classList.remove('visible');ttsUpdateUI();}
+document.getElementById('ttsPlay').addEventListener('click',ttsPlay);
+document.getElementById('ttsPause').addEventListener('click',ttsPauseF);
+document.getElementById('ttsStop').addEventListener('click',ttsStopF);
+document.getElementById('ttsPrev').addEventListener('click',()=>{const i=Math.max(0,ttsIndex-1);if(ttsPlaying)ttsSpeak(i);else{ttsIndex=i;ttsHighlight(i);ttsUpdateUI();}});
+document.getElementById('ttsNext').addEventListener('click',()=>{const i=Math.min(ttsSentences.length-1,ttsIndex+1);if(ttsPlaying)ttsSpeak(i);else{ttsIndex=i;ttsHighlight(i);ttsUpdateUI();}});
+document.getElementById('ttsSpeedBtn').addEventListener('click',()=>{ttsSpeedIdx=(ttsSpeedIdx+1)%TTS_SPEEDS.length;ttsUpdateUI();if(ttsPlaying)ttsSpeak(ttsIndex);});
+document.getElementById('ttsClose').addEventListener('click',ttsStopF);
+document.getElementById('ttsTrack').addEventListener('click',e=>{if(!ttsSentences.length)return;const pct=(e.clientX-e.currentTarget.getBoundingClientRect().left)/e.currentTarget.getBoundingClientRect().width;const i=Math.round(pct*(ttsSentences.length-1));if(ttsPlaying)ttsSpeak(i);else{ttsIndex=i;ttsHighlight(i);ttsUpdateUI();}});
+window.speechSynthesis.onvoiceschanged=()=>{};
 
-function ttsPlay() {
-  if (ttsSentences.length === 0) { ttsLaunch(); return; }
-  ttsPlaying = true;
-  ttsSpeak(ttsIndex);
-}
+// ── MOBILE NAV ───────────────────────────────────────────────
+const isMobile=()=>window.innerWidth<=768;
+let activeBnavPanel='none';
+function closeMobileSidebar(){document.getElementById('sidebar').classList.remove('mobile-open');document.getElementById('sidebarOverlay').classList.remove('visible');activeBnavPanel='none';document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('bnav-read').classList.add('active');}
+function openMobileSidebar(scrollId){document.getElementById('sidebar').classList.add('mobile-open');document.getElementById('sidebarOverlay').classList.add('visible');if(scrollId){setTimeout(()=>{const el=document.getElementById(scrollId);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},120);}}
+document.getElementById('sidebarOverlay').addEventListener('click',closeMobileSidebar);
+document.querySelectorAll('.bnav-btn').forEach(btn=>btn.addEventListener('click',()=>{
+  if(!isMobile()) return;
+  const panel=btn.dataset.panel;
+  if(panel==='open'){document.getElementById('fileInput').click();return;}
+  if(panel==='tts'){ttsLaunch();return;}
+  if(panel==='none'){closeMobileSidebar();return;}
+  if(activeBnavPanel===panel){closeMobileSidebar();return;}
+  activeBnavPanel=panel;
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+  openMobileSidebar(panel==='notes'?'notesPanel':'fileList');
+}));
 
-function ttsPauseF() {
-  ttsPlaying = false;
-  window.speechSynthesis.cancel();
-  ttsUpdateUI();
-}
+// ── HEADER TTS BUTTON ────────────────────────────────────────
+document.getElementById('ttsHeaderBtn').addEventListener('click',()=>{if(!activeId){alert('Primero abre un archivo Markdown.');return;}ttsLaunch();});
 
-function ttsStopF() {
-  ttsPlaying = false;
-  ttsIndex = 0;
-  window.speechSynthesis.cancel();
-  document.querySelectorAll('.tts-reading').forEach(el => el.classList.remove('tts-reading'));
-  document.getElementById('ttsBar').classList.remove('visible');
-  ttsUpdateUI();
-}
-
-// Bind TTS bar buttons (static, only once)
-document.getElementById('ttsPlay').addEventListener('click',  ttsPlay);
-document.getElementById('ttsPause').addEventListener('click', ttsPauseF);
-document.getElementById('ttsStop').addEventListener('click',  ttsStopF);
-document.getElementById('ttsPrev').addEventListener('click',  () => {
-  const idx = Math.max(0, ttsIndex - 1);
-  if (ttsPlaying) ttsSpeak(idx); else { ttsIndex = idx; ttsHighlightSentence(idx); ttsUpdateUI(); }
-});
-document.getElementById('ttsNext').addEventListener('click', () => {
-  const idx = Math.min(ttsSentences.length - 1, ttsIndex + 1);
-  if (ttsPlaying) ttsSpeak(idx); else { ttsIndex = idx; ttsHighlightSentence(idx); ttsUpdateUI(); }
-});
-document.getElementById('ttsSpeedBtn').addEventListener('click', () => {
-  ttsSpeedIdx = (ttsSpeedIdx + 1) % TTS_SPEEDS.length;
-  ttsUpdateUI();
-  if (ttsPlaying) ttsSpeak(ttsIndex); // restart current sentence at new speed
-});
-document.getElementById('ttsClose').addEventListener('click', ttsStopF);
-document.getElementById('ttsTrack').addEventListener('click', (e) => {
-  if (!ttsSentences.length) return;
-  const rect = e.currentTarget.getBoundingClientRect();
-  const pct  = (e.clientX - rect.left) / rect.width;
-  const idx  = Math.round(pct * (ttsSentences.length - 1));
-  if (ttsPlaying) ttsSpeak(idx); else { ttsIndex = idx; ttsHighlightSentence(idx); ttsUpdateUI(); }
-});
-
-// Voices may load async
-window.speechSynthesis.onvoiceschanged = () => {};
-
-// ================================================================
-// MOBILE BOTTOM NAV
-// ================================================================
-const isMobile = () => window.innerWidth <= 768;
-let activeBnavPanel = 'none';
-
-function closeMobileSidebar() {
-  document.getElementById('sidebar').classList.remove('mobile-open');
-  document.getElementById('sidebarOverlay').classList.remove('visible');
-  activeBnavPanel = 'none';
-  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('bnav-read').classList.add('active');
-}
-
-function openMobileSidebar(scrollToId) {
-  document.getElementById('sidebar').classList.add('mobile-open');
-  document.getElementById('sidebarOverlay').classList.add('visible');
-  if (scrollToId) {
-    setTimeout(() => {
-      const el = document.getElementById(scrollToId);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-  }
-}
-
-document.getElementById('sidebarOverlay').addEventListener('click', closeMobileSidebar);
-
-document.querySelectorAll('.bnav-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (!isMobile()) return;
-    const panel = btn.dataset.panel;
-
-    if (panel === 'open') {
-      document.getElementById('fileInput').click();
-      return;
-    }
-
-    if (panel === 'tts') {
-      ttsLaunch();
-      return;
-    }
-
-    if (panel === 'none') {
-      closeMobileSidebar();
-      return;
-    }
-
-    // Toggle
-    if (activeBnavPanel === panel) {
-      closeMobileSidebar();
-      return;
-    }
-
-    activeBnavPanel = panel;
-    document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    const scrollMap = { files: 'fileList', notes: 'notesPanel', pomo: 'pomodoroPanel' };
-    openMobileSidebar(scrollMap[panel]);
-  });
-});
-
-// On desktop, keep original sidebar toggle behavior
-function toggleSidebarDesktop() {
-  if (isMobile()) return;
-  document.getElementById('sidebar').classList.toggle('collapsed');
-}
-
-// ================================================================
-// INIT
-// ================================================================
-// TTS header button (always visible in header)
+// ── INIT ─────────────────────────────────────────────────────
 loadState();
-
-document.getElementById('ttsHeaderBtn').addEventListener('click', () => {
-  if (!activeId) { alert('Primero abre o pega un archivo Markdown.'); return; }
-  ttsLaunch();
-});
-
-document.getElementById('pomoHeaderBtn').addEventListener('click', () => {
-  const sidebar = document.getElementById('sidebar');
-  if (isMobile()) {
-    activeBnavPanel = 'pomo';
-    document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('bnav-pomo').classList.add('active');
-    openMobileSidebar('pomodoroPanel');
-  } else {
-    sidebar.classList.remove('collapsed');
-    document.getElementById('pomodoroPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-});
-
 render();
 </script>
 </body>
